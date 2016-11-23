@@ -2,7 +2,12 @@ package main
 
 import (
 	"fmt"
+	_ "github.com/go-sql-driver/mysql"
+	"github.com/jmoiron/sqlx"
+	"handler"
 	"io"
+	"log"
+	"model"
 	"net/http"
 	"os"
 )
@@ -22,6 +27,15 @@ func staticFileHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
+	if len(os.Args) < 2 {
+		log.Fatalf("Usage: %s MYSQL_SERVER_ADDRESS", os.Args[0])
+	}
+	addr := os.Args[1]
+
+	db := sqlx.MustConnect("mysql", "mpa@tcp("+addr+":3306)/mpa")
+	dao := model.NewPluginMySQLDAO(db)
+
+	http.Handle("/plugin", handler.NewPluginHandler(dao))
 	http.HandleFunc("/", staticFileHandler)
 	http.ListenAndServe(":8080", nil)
 }
