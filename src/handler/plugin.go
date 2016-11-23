@@ -1,7 +1,7 @@
 package handler
 
 import (
-	"fmt"
+	"encoding/json"
 	"model"
 	"net/http"
 )
@@ -15,6 +15,15 @@ func NewPluginHandler(dao model.PluginDAO) http.Handler {
 }
 
 func (h pluginHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	params := r.URL.Query()
+	name := params["name"][0]
+	enc := json.NewEncoder(w)
 	w.Header().Set("Content-Type", "application/json")
-	fmt.Fprintf(w, "{}")
+
+	plugin, err := h.dao.FindPlugin(name)
+	if err != nil {
+		enc.Encode(map[string]string{"error": err.Error()})
+	} else {
+		enc.Encode(plugin)
+	}
 }

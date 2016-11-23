@@ -5,6 +5,7 @@ import (
 )
 
 type Plugin struct {
+	Id          int
 	Name        string
 	Version     string
 	Description string
@@ -27,7 +28,7 @@ func NewPluginMySQLDAO(db *sqlx.DB) PluginDAO {
 
 func (dao *mysqlPluginDAO) FindPlugin(name string) (Plugin, error) {
 	plugin := Plugin{}
-	err := dao.db.Get(&plugin, `SELECT * FROM plugins WHERE name=:name`, name)
+	err := dao.db.Get(&plugin, `SELECT * FROM plugins WHERE name=?`, name)
 	if err != nil {
 		return Plugin{}, err
 	}
