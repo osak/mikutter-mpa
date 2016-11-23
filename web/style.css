@@ -1,0 +1,20 @@
+.plugin {
+}
+
+.plugin .plugin__name {
+    display: inline-block;
+}
+
+.plugin .plugin__version {
+    color: gray;
+    display: inline-block;
+    margin-left: 1em;
+}
+
+.plugin .plugin__description {
+    font-style: italic;
+}
+
+.plugin .plugin__repository__label {
+    font-weight: bold;
+}

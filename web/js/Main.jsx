@@ -2,6 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 
 import Navbar from './Navbar.jsx';
+import Plugin from './Plugin.jsx';
 
 class Main extends React.Component {
     render() {
@@ -19,7 +20,12 @@ class Main extends React.Component {
 }
 
 function render() {
-    ReactDOM.render(<Main></Main>, document.getElementById('main'));
+    let testPlugin = {
+        name: 'Test',
+        version: '3.9.3',
+        description: 'Test plugin'
+    };
+    ReactDOM.render(<Main><Plugin spec={testPlugin} /></Main>, document.getElementById('main'));
 }
 
 window.addEventListener('DOMContentLoaded', () => {
