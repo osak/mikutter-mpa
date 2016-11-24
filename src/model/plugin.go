@@ -5,11 +5,11 @@ import (
 )
 
 type Plugin struct {
-	Id          int
-	Name        string
-	Version     string
-	Description string
-	Url         string
+	Id          int    `json:"id"`
+	Name        string `json:"name"`
+	Version     string `json:"version"`
+	Description string `json:"description"`
+	Url         string `json:"url"`
 }
 
 type PluginDAO interface {
