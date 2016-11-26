@@ -3,7 +3,7 @@ GO_SRCS=$(wildcard src/**/*.go)
 
 all: mpa
 
-mpa: $(GO_SRCS) web-build
+mpa: $(GO_SRCS) web
 	GOPATH=`pwd` go install mpa
 
 web:

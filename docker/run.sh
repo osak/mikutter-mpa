@@ -1,7 +1,5 @@
 #!/bin/bash
 
-set -e
-
 NETWORK_NAME=mpa_nw
 MPA_IMAGE_NAME=mpa
 MPA_CONTAINER_NAME=mpa
@@ -15,7 +13,7 @@ echo "base directory: ${base_dir}"
 
 docker network ls | awk '{print $2}' | grep -e "^${NETWORK_NAME}$" > /dev/null
 network_exists=$?
-if [ ! $network_exists ]; then
+if [ ${network_exists} -ne 0 ]; then
     echo "Network ${mpa_nw} doesn't exist. Creating..."
     docker network create --driver=bridge --subnet=172.18.0.0/24 "${NETWORK_NAME}"
     echo "Done."
