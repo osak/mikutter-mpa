@@ -1,18 +1,35 @@
 import React from 'react';
+import {get} from './Ajax.jsx';
 
 export default class Plugin extends React.Component {
     constructor() {
         super();
         this.onTextboxClick = this.onTextboxClick.bind(this);
+        this.state = {
+            spec: {
+                name: null,
+                repositoryUrl: null,
+                version: null,
+                description: null
+            }
+        };
+    }
+
+    async componentDidMount() {
+        let pluginName = this.props.params.name;
+        let spec = await get(`/plugin?name=${pluginName}`);
+        this.setState({
+            spec: spec
+        });
     }
 
     render() {
-        let repository = this.props.spec.repositoryUrl || '(unpublished)';
+        let repository = this.state.spec.repositoryUrl || '(unpublished)';
         return (
             <div className="plugin">
-                <h1 className="plugin__name">{this.props.spec.name}</h1>
-                <div className="plugin__version">{this.props.spec.version}</div>
-                <div className="plugin__description">{this.props.spec.description}</div>
+                <h1 className="plugin__name">{this.state.spec.name}</h1>
+                <div className="plugin__version">{this.state.spec.version}</div>
+                <div className="plugin__description">{this.state.spec.description}</div>
                 <div className="plugin__repository form-inline">
                     <div className="form-group">
                         <label htmlFor="repository" className="plugin__repository__label">URL</label>
@@ -29,10 +46,7 @@ export default class Plugin extends React.Component {
 }
 
 Plugin.properties = {
-    spec: React.PropTypes.shape({
-        name: React.PropTypes.string.isRequired,
-        version: React.PropTypes.string.isRequired,
-        description: React.PropTypes.string.isRequired,
-        repositoryUrl: React.PropTypes.string
+    params: React.PropTypes.shape({
+        name: React.PropTypes.string.isRequired
     }).isRequired
 }
