@@ -2,7 +2,7 @@ const webpack = require('webpack');
 
 module.exports = {
     entry: ['babel-polyfill', './web/js/Main.jsx'],
-    output: { path: './web-build', filename: 'bundle.js', sourceMapFilename: 'bundle.map' },
+    output: { path: './web-build', filename: 'static/bundle.js', sourceMapFilename: 'bundle.map' },
     devtool: '#source-map',
     module: {
         loaders: [{
@@ -17,7 +17,7 @@ module.exports = {
     plugins: [
         new webpack.optimize.DedupePlugin(),
         new webpack.optimize.AggressiveMergingPlugin(),
-        new webpack.optimize.UglifyJsPlugin(),
+        //new webpack.optimize.UglifyJsPlugin(),
         new webpack.EnvironmentPlugin(['NODE_ENV']),
     ]
 }

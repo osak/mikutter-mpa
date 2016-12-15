@@ -1,6 +1,8 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
+import {Router, Route, IndexRoute, browserHistory} from 'react-router';
 
+import Top from './Top.jsx';
 import Navbar from './Navbar.jsx';
 import Plugin from './Plugin.jsx';
 
@@ -20,12 +22,14 @@ class Main extends React.Component {
 }
 
 function render() {
-    let testPlugin = {
-        name: 'Test',
-        version: '3.9.3',
-        description: 'Test plugin'
-    };
-    ReactDOM.render(<Main><Plugin spec={testPlugin} /></Main>, document.getElementById('main'));
+    ReactDOM.render((
+        <Router history={browserHistory}>
+            <Route path="/" component={Main}>
+                <IndexRoute component={Top} />
+                <Route path="/plugin/:name" component={Plugin} />
+            </Route>
+        </Router>
+    ), document.getElementById('main'));
 }
 
 window.addEventListener('DOMContentLoaded', () => {
