@@ -1,26 +1,48 @@
 import React from 'react';
+import SearchBox from './component/SearchBox.jsx';
+import {get} from './Ajax.jsx';
 
-const Search = ({router}) => {
-    let searchBox = (<input type="text" className="form-control" placeholder="Plugin name (e.g. mpa)" />);
-    let searchFunc = () => {
-        let name = searchBox.value;
-        router.push(`/plugin/${name}`);
-    };
-    return (
-        <div className="jumbotron">
-            <h1>Mikutter Plugin Archives</h1>
-            <p>Welcome! Try search:</p>
-            <div className="form-inline">
-                <div className="form-group">
-                    {searchBox}
-                    <button className="btn btn-primary" onClick={searchFunc}>Search</button>
-                </div>
+export default class Search extends React.Component {
+    constructor() {
+        super();
+        this.state = {
+            searchResult: []
+        }
+    }
+
+    async componentDidMount() {
+        let query = this.props.location.query.filter;
+        let result = await get(`/plugin?filter=${query}`);
+        this.setState({
+            searchResult: result
+        });
+    }
+
+    render() {
+        let searchFunc = (query) => {
+            router.push(`/plugin?filter=${query}`);
+        };
+
+        let results = this.state.searchResult.map((spec) => {
+            return (
+                <li key={spec.name}>
+                    <div><a href={`/plugin/${spec.name}`}>{spec.name}</a></div>
+                    <div>{spec.version}</div>
+                    <div>{spec.description}</div>
+                </li>
+            );
+        });
+
+        return (
+            <div>
+                <SearchBox onSubmit={searchFunc} />
+                <ul>
+                    {results}
+                </ul>
             </div>
-        </div>
-    );
+        );
+    }
 }
 
 Search.properties = {
 }
-
-export default Search;

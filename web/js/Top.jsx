@@ -4,7 +4,7 @@ import SearchBox from './component/SearchBox.jsx';
 const Top = ({router}) => {
     let searchFunc = (query) => {
         let name = query;
-        router.push(`/plugin/${name}`);
+        router.push(`/plugin?filter=${name}`);
     };
     return (
         <div className="jumbotron">

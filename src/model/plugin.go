@@ -14,6 +14,7 @@ type Plugin struct {
 
 type PluginDAO interface {
 	FindPlugin(name string) (Plugin, error)
+	FindPlugins(keyword string) ([]Plugin, error)
 }
 
 type mysqlPluginDAO struct {
@@ -33,4 +34,21 @@ func (dao *mysqlPluginDAO) FindPlugin(name string) (Plugin, error) {
 		return Plugin{}, err
 	}
 	return plugin, nil
+}
+
+func (dao *mysqlPluginDAO) FindPlugins(keyword string) ([]Plugin, error) {
+	plugins := []Plugin{}
+	pattern := "%" + keyword + "%"
+	stmt, err := dao.db.PrepareNamed(`SELECT * FROM plugins WHERE name LIKE :pattern OR description LIKE :pattern`)
+	if err != nil {
+		return plugins, err
+	}
+
+	err = stmt.Select(&plugins, map[string]interface{}{
+		"pattern": pattern,
+	})
+	if err != nil {
+		return plugins, err
+	}
+	return plugins, nil
 }

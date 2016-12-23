@@ -48,7 +48,8 @@ func main() {
 	db := sqlx.MustConnect("mysql", "mpa@tcp("+addr+":3306)/mpa")
 	dao := model.NewPluginMySQLDAO(db)
 
-	http.Handle("/plugin", handler.NewPluginHandler(dao))
+	http.Handle("/plugin/", handler.NewPluginHandler(dao))
+	http.Handle("/plugin", handler.NewPluginSearchHandler(dao))
 	http.HandleFunc("/static/", staticFileHandler)
 	http.HandleFunc("/", mainPageHandler)
 	http.ListenAndServe(":8080", nil)
