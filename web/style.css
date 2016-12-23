@@ -18,3 +18,34 @@
 .plugin .plugin__repository__label {
     font-weight: bold;
 }
+
+.search {
+    list-style: none;
+    padding-left: 0;
+}
+
+.search .search__result {
+    border-top: 2px double gray;
+    margin-top: 1em;
+    padding-top: 1em;
+}
+
+.search .search__result:hover {
+    background-color: hsl(0, 0%, 90%);
+}
+
+.search .search__result__name {
+    font-size: 120%;
+    display: inline-block;
+    margin-right: 2em;
+}
+
+.search .search__result__version {
+    display: inline-block;
+    font-weight: bold;
+    font-style: italic;
+}
+
+.search .search__result__description {
+    color: gray;
+}

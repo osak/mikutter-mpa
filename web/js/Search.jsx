@@ -25,10 +25,10 @@ export default class Search extends React.Component {
 
         let results = this.state.searchResult.map((spec) => {
             return (
-                <li key={spec.name}>
-                    <div><a href={`/plugin/${spec.name}`}>{spec.name}</a></div>
-                    <div>{spec.version}</div>
-                    <div>{spec.description}</div>
+                <li className="search__result" key={spec.name}>
+                    <div className="search__result__name"><a href={`/plugin/${spec.name}`}>{spec.name}</a></div>
+                    <div className="search__result__version">{spec.version}</div>
+                    <div className="search__result__description">{spec.description}</div>
                 </li>
             );
         });
@@ -36,7 +36,7 @@ export default class Search extends React.Component {
         return (
             <div>
                 <SearchBox onSubmit={searchFunc} />
-                <ul>
+                <ul className="search">
                     {results}
                 </ul>
             </div>
