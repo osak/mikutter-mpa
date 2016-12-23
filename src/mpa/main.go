@@ -54,6 +54,8 @@ func main() {
 	dao := model.NewPluginMySQLDAO(db)
 
 	registerAPI("plugin", handler.NewPluginHandler(dao), handler.NewPluginSearchHandler(dao))
+	http.HandleFunc("/api/auth/login", authenticationStartHandler)
+	http.HandleFunc("/api/auth/callback", authenticationCallbackHandler)
 	http.HandleFunc("/static/", staticFileHandler)
 	http.HandleFunc("/", mainPageHandler)
 	http.ListenAndServe(":8080", nil)

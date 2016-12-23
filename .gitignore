@@ -3,4 +3,5 @@ pkg
 node_modules
 web-build
 src/github.com
+src/golang.org
 mysql
