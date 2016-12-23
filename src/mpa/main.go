@@ -51,11 +51,13 @@ func main() {
 	addr := os.Args[1]
 
 	db := sqlx.MustConnect("mysql", "mpa@tcp("+addr+":3306)/mpa")
-	dao := model.NewPluginMySQLDAO(db)
+	pluginDAO := model.NewPluginMySQLDAO(db)
+	userDAO := model.NewUserMySQLDAO(db)
+	sessionDAO := model.NewSessionMySQLDAO(db, userDAO)
 
-	registerAPI("plugin", handler.NewPluginHandler(dao), handler.NewPluginSearchHandler(dao))
+	registerAPI("plugin", handler.NewPluginHandler(pluginDAO), handler.NewPluginSearchHandler(pluginDAO))
 	http.HandleFunc("/api/auth/login", authenticationStartHandler)
-	http.HandleFunc("/api/auth/callback", authenticationCallbackHandler)
+	http.HandleFunc("/api/auth/callback", authenticationCallbackHandler(userDAO, sessionDAO))
 	http.HandleFunc("/static/", staticFileHandler)
 	http.HandleFunc("/", mainPageHandler)
 	http.ListenAndServe(":8080", nil)
