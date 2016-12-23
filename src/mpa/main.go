@@ -12,6 +12,11 @@ import (
 	"os"
 )
 
+func registerAPI(resource string, showHandler, searchHandler http.Handler) {
+	http.Handle("/api/"+resource+"/", showHandler)
+	http.Handle("/api/"+resource, searchHandler)
+}
+
 func staticFileHandler(w http.ResponseWriter, r *http.Request) {
 	path := r.URL.Path
 	f, err := os.Open("/app/web/" + path)
@@ -48,8 +53,7 @@ func main() {
 	db := sqlx.MustConnect("mysql", "mpa@tcp("+addr+":3306)/mpa")
 	dao := model.NewPluginMySQLDAO(db)
 
-	http.Handle("/plugin/", handler.NewPluginHandler(dao))
-	http.Handle("/plugin", handler.NewPluginSearchHandler(dao))
+	registerAPI("plugin", handler.NewPluginHandler(dao), handler.NewPluginSearchHandler(dao))
 	http.HandleFunc("/static/", staticFileHandler)
 	http.HandleFunc("/", mainPageHandler)
 	http.ListenAndServe(":8080", nil)

@@ -12,7 +12,7 @@ export default class Search extends React.Component {
 
     async componentDidMount() {
         let query = this.props.location.query.filter;
-        let result = await get(`/plugin?filter=${query}`);
+        let result = await get(`/api/plugin?filter=${query}`);
         this.setState({
             searchResult: result
         });

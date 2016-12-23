@@ -20,13 +20,14 @@ func NewPluginHandler(dao model.PluginDAO) http.Handler {
 }
 
 func (h pluginHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	components := strings.SplitN(r.URL.Path, "/", 3)
-	name := components[2]
+	components := strings.SplitN(r.URL.Path, "/", 4)
+	name := components[3]
 	enc := json.NewEncoder(w)
 	w.Header().Set("Content-Type", "application/json")
 
 	plugin, err := h.dao.FindPlugin(name)
 	if err != nil {
+		w.WriteHeader(http.StatusNotFound)
 		enc.Encode(map[string]string{"error": err.Error()})
 	} else {
 		enc.Encode(plugin)

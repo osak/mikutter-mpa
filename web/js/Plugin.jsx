@@ -17,7 +17,7 @@ export default class Plugin extends React.Component {
 
     async componentDidMount() {
         let pluginName = this.props.params.name;
-        let spec = await get(`/plugin?name=${pluginName}`);
+        let spec = await get(`/api/plugin/${pluginName}`);
         this.setState({
             spec: spec
         });
