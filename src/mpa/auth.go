@@ -42,15 +42,27 @@ func authenticationCallbackHandler(userDAO model.UserDAO, sessionDAO model.Sessi
 			return
 		}
 		client := conf.Client(ctx, tok)
-		_, err = findOrCreateAuthenticatedUser(client, userDAO)
+		user, err := findOrCreateAuthenticatedUser(client, userDAO)
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			fmt.Fprintf(w, "%s", err)
+			return
+		}
+		session, err := sessionDAO.Create(user)
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			fmt.Fprintf(w, "%s", err)
 			return
 		}
 
-		w.Header().Set("Location", "/")
-		w.WriteHeader(http.StatusFound)
+		sessionCookie := &http.Cookie{
+			Name:   "SESSIONID",
+			Value:  session.Id,
+			Path:   "/",
+			MaxAge: 60 * 60 * 4,
+		}
+		http.SetCookie(w, sessionCookie)
+		http.Redirect(w, r, "/", http.StatusFound)
 	}
 }
 

@@ -13,7 +13,7 @@ type User struct {
 
 type UserDAO interface {
 	FindById(id int) (User, error)
-	FindByLogin(name string) (User, error)
+	FindByLogin(login string) (User, error)
 	Create(user User) (User, error)
 }
 
@@ -33,9 +33,9 @@ func (dao *mysqlUserDAO) FindById(id int) (User, error) {
 	return user, err
 }
 
-func (dao *mysqlUserDAO) FindByLogin(name string) (User, error) {
+func (dao *mysqlUserDAO) FindByLogin(login string) (User, error) {
 	user := User{}
-	err := dao.db.Get(&user, `SELECT * FROM users WHERE name=?`, name)
+	err := dao.db.Get(&user, `SELECT * FROM users WHERE login=?`, login)
 	if err == sql.ErrNoRows {
 		return User{}, ErrNoEntry
 	}
