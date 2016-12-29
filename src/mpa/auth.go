@@ -7,7 +7,7 @@ import (
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/github"
 	"io"
-	"model"
+	"mpa/model"
 	"net/http"
 	"os"
 )

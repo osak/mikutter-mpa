@@ -4,10 +4,10 @@ import (
 	"fmt"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/jmoiron/sqlx"
-	"handler"
 	"io"
 	"log"
-	"model"
+	"mpa/handler"
+	"mpa/model"
 	"net/http"
 	"os"
 )
