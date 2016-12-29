@@ -28,8 +28,8 @@ type internalHandler struct {
 }
 
 func (handler *internalHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
-	lastProcessed := 0
-	lastCompleted := 0
+	lastProcessed := -1
+	lastCompleted := -1
 	for i, f := range handler.filterChain {
 		lastProcessed = i
 		if !f.PreHandle(w, req) {

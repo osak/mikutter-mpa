@@ -6,8 +6,10 @@ import (
 	"github.com/jmoiron/sqlx"
 	"io"
 	"log"
+	"mpa/auth"
 	"mpa/handler"
 	"mpa/model"
+	"mpa/route"
 	"net/http"
 	"os"
 )
@@ -55,9 +57,11 @@ func main() {
 	userDAO := model.NewUserMySQLDAO(db)
 	sessionDAO := model.NewSessionMySQLDAO(db, userDAO)
 
+	authFilterChain := route.CreateFilterChain(&auth.Filter{[]byte{1, 2, 3, 4}})
 	registerAPI("plugin", handler.NewPluginHandler(pluginDAO), handler.NewPluginSearchHandler(pluginDAO))
-	http.HandleFunc("/api/auth/login", authenticationStartHandler)
-	http.HandleFunc("/api/auth/callback", authenticationCallbackHandler(userDAO, sessionDAO))
+	http.Handle("/api/user", authFilterChain.Wrap(mainPageHandler))
+	http.HandleFunc("/api/auth/login", auth.LoginHandler)
+	http.HandleFunc("/api/auth/callback", auth.LoginCallbackHandler(userDAO, sessionDAO))
 	http.HandleFunc("/static/", staticFileHandler)
 	http.HandleFunc("/", mainPageHandler)
 	http.ListenAndServe(":8080", nil)

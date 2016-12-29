@@ -1,4 +1,4 @@
-package main
+package auth
 
 import (
 	"encoding/json"
@@ -18,13 +18,13 @@ var conf *oauth2.Config = &oauth2.Config{
 	Endpoint:     github.Endpoint,
 }
 
-func authenticationStartHandler(w http.ResponseWriter, r *http.Request) {
+func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	url := conf.AuthCodeURL("dummy-state", oauth2.AccessTypeOnline)
 	w.Header().Set("Location", url)
 	w.WriteHeader(http.StatusFound)
 }
 
-func authenticationCallbackHandler(userDAO model.UserDAO, sessionDAO model.SessionDAO) http.HandlerFunc {
+func LoginCallbackHandler(userDAO model.UserDAO, sessionDAO model.SessionDAO) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		params := r.URL.Query()
 		state := params["state"][0]
@@ -38,30 +38,25 @@ func authenticationCallbackHandler(userDAO model.UserDAO, sessionDAO model.Sessi
 		tok, err := conf.Exchange(ctx, code)
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
-			fmt.Fprintf(w, "%s", err)
+			fmt.Fprintf(w, "Exchange failure: %s", err)
 			return
 		}
 		client := conf.Client(ctx, tok)
 		user, err := findOrCreateAuthenticatedUser(client, userDAO)
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
-			fmt.Fprintf(w, "%s", err)
-			return
-		}
-		session, err := sessionDAO.Create(user)
-		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			fmt.Fprintf(w, "%s", err)
+			fmt.Fprintf(w, "DB lookup failure: %s", err)
 			return
 		}
 
-		sessionCookie := &http.Cookie{
-			Name:   "SESSIONID",
-			Value:  session.Id,
-			Path:   "/",
-			MaxAge: 60 * 60 * 4,
+		token := Token{user}
+		tokenString, err := token.encode([]byte{1, 2, 3, 4})
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			fmt.Fprintf(w, "JWT encode failure: %s", err)
+			return
 		}
-		http.SetCookie(w, sessionCookie)
+		w.Header().Set("X-JWT", tokenString)
 		http.Redirect(w, r, "/", http.StatusFound)
 	}
 }
