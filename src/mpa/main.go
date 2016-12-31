@@ -55,14 +55,16 @@ func main() {
 	db := sqlx.MustConnect("mysql", "mpa@tcp("+addr+":3306)/mpa")
 	pluginDAO := model.NewPluginMySQLDAO(db)
 	userDAO := model.NewUserMySQLDAO(db)
-	sessionDAO := model.NewSessionMySQLDAO(db, userDAO)
 	tokenDecoder := &auth.TokenDecoder{userDAO}
+
+	loginController := &auth.LoginController{}
+	loginCallbackController := &auth.LoginCallbackController{userDAO}
 
 	authFilterChain := route.CreateFilterChain(&auth.Filter{tokenDecoder, []byte{1, 2, 3, 4}})
 	registerAPI("plugin", handler.NewPluginHandler(pluginDAO), handler.NewPluginSearchHandler(pluginDAO))
-	http.Handle("/api/user", authFilterChain.Wrap(mainPageHandler))
-	http.HandleFunc("/api/auth/login", auth.LoginHandler)
-	http.HandleFunc("/api/auth/callback", auth.LoginCallbackHandler(userDAO, sessionDAO))
+	http.Handle("/api/user", authFilterChain.Wrap(route.Wrap(mainPageHandler)))
+	http.HandleFunc("/api/auth/login", route.Unwrap(loginController))
+	http.HandleFunc("/api/auth/callback", route.Unwrap(loginCallbackController))
 	http.HandleFunc("/static/", staticFileHandler)
 	http.HandleFunc("/", mainPageHandler)
 	http.ListenAndServe(":8080", nil)

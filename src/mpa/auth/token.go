@@ -4,6 +4,7 @@ import (
 	"fmt"
 	jwt "github.com/dgrijalva/jwt-go"
 	"mpa/model"
+	"mpa/route"
 	"time"
 )
 
@@ -56,5 +57,20 @@ func (dec *TokenDecoder) Decode(secret []byte, tokenString string) (Token, error
 			}
 		}
 		return Token{}, err
+	}
+}
+
+const tokenAttributeName = "auth/token"
+
+func registerToken(ctx *route.Context, token *Token) {
+	ctx.PutAttribute(tokenAttributeName, token)
+}
+
+func GetToken(ctx *route.Context) *Token {
+	obj := ctx.GetAttribute(tokenAttributeName)
+	if token, ok := obj.(*Token); ok {
+		return token
+	} else {
+		return nil
 	}
 }

@@ -8,6 +8,7 @@ import (
 	"golang.org/x/oauth2/github"
 	"io"
 	"mpa/model"
+	"mpa/route"
 	"net/http"
 	"os"
 )
@@ -18,46 +19,52 @@ var conf *oauth2.Config = &oauth2.Config{
 	Endpoint:     github.Endpoint,
 }
 
-func LoginHandler(w http.ResponseWriter, r *http.Request) {
+type LoginController struct{}
+
+func (controller *LoginController) Serve(ctx *route.Context) error {
 	url := conf.AuthCodeURL("dummy-state", oauth2.AccessTypeOnline)
-	w.Header().Set("Location", url)
-	w.WriteHeader(http.StatusFound)
+	ctx.ResponseWriter.Header().Set("Location", url)
+	ctx.ResponseWriter.WriteHeader(http.StatusFound)
+	return nil
 }
 
-func LoginCallbackHandler(userDAO model.UserDAO, sessionDAO model.SessionDAO) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		params := r.URL.Query()
-		state := params["state"][0]
-		code := params["code"][0]
-		if state != "dummy-state" {
-			w.WriteHeader(http.StatusBadRequest)
-			return
-		}
+type LoginCallbackController struct {
+	UserDAO model.UserDAO
+}
 
-		ctx := context.Background()
-		tok, err := conf.Exchange(ctx, code)
-		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			fmt.Fprintf(w, "Exchange failure: %s", err)
-			return
-		}
-		client := conf.Client(ctx, tok)
-		user, err := findOrCreateAuthenticatedUser(client, userDAO)
-		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			fmt.Fprintf(w, "DB lookup failure: %s", err)
-			return
-		}
-
-		tokenString, err := createTokenString(&user, []byte{1, 2, 3, 4})
-		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			fmt.Fprintf(w, "JWT encode failure: %s", err)
-			return
-		}
-		w.Header().Set("X-JWT", tokenString)
-		http.Redirect(w, r, "/", http.StatusFound)
+func (controller *LoginCallbackController) Serve(ctx *route.Context) error {
+	params := ctx.Request.URL.Query()
+	state := params["state"][0]
+	code := params["code"][0]
+	if state != "dummy-state" {
+		ctx.ResponseWriter.WriteHeader(http.StatusBadRequest)
+		return ErrInvalidToken
 	}
+
+	httpContext := context.Background()
+	tok, err := conf.Exchange(httpContext, code)
+	if err != nil {
+		ctx.ResponseWriter.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprintf(ctx.ResponseWriter, "Exchange failure: %s", err)
+		return ErrInvalidToken
+	}
+	client := conf.Client(httpContext, tok)
+	user, err := findOrCreateAuthenticatedUser(client, controller.UserDAO)
+	if err != nil {
+		ctx.ResponseWriter.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprintf(ctx.ResponseWriter, "DB lookup failure: %s", err)
+		return ErrInvalidToken
+	}
+
+	tokenString, err := createTokenString(&user, []byte{1, 2, 3, 4})
+	if err != nil {
+		ctx.ResponseWriter.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprintf(ctx.ResponseWriter, "JWT encode failure: %s", err)
+		return ErrInvalidToken
+	}
+	ctx.ResponseWriter.Header().Set("X-JWT", tokenString)
+	http.Redirect(ctx.ResponseWriter, ctx.Request, "/", http.StatusFound)
+	return nil
 }
 
 type githubUser struct {

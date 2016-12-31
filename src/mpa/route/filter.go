@@ -5,43 +5,45 @@ import (
 )
 
 type Filter interface {
-	PreHandle(w http.ResponseWriter, req *http.Request) bool
-	PostHandle(w http.ResponseWriter, req *http.Request) bool
+	PreHandle(ctx *Context) error
+	PostHandle(ctx *Context) error
 }
 
 type FilterChain []Filter
 
-func CreateFilterChain(filters ...Filter) FilterChain {
-	return filters
+func CreateFilterChain(filters ...Filter) *FilterChain {
+	var chain FilterChain = filters
+	return &chain
 }
 
-func (fc FilterChain) Wrap(handler func(http.ResponseWriter, *http.Request)) http.Handler {
+func (fc *FilterChain) Wrap(controller Controller) http.Handler {
 	return &internalHandler{
 		filterChain: fc,
-		rawHandler:  handler,
+		controller:  controller,
 	}
 }
 
 type internalHandler struct {
-	filterChain FilterChain
-	rawHandler  func(http.ResponseWriter, *http.Request)
+	filterChain *FilterChain
+	controller  Controller
 }
 
 func (handler *internalHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	lastProcessed := -1
 	lastCompleted := -1
-	for i, f := range handler.filterChain {
+	ctx := NewContext(w, req)
+	for i, f := range *handler.filterChain {
 		lastProcessed = i
-		if !f.PreHandle(w, req) {
+		if err := f.PreHandle(ctx); err != nil {
 			break
 		}
 		lastCompleted = i
 	}
 	if lastCompleted == lastProcessed {
-		handler.rawHandler(w, req)
+		handler.controller.Serve(ctx)
 	}
 	for i := lastProcessed; i >= 0; i-- {
-		f := handler.filterChain[i]
-		f.PostHandle(w, req)
+		f := (*handler.filterChain)[i]
+		f.PostHandle(ctx)
 	}
 }

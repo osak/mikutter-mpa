@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"mpa/route"
 	"net/http"
 	"strings"
 )
@@ -10,34 +11,34 @@ type Filter struct {
 	Secret       []byte
 }
 
-func (f *Filter) PreHandle(w http.ResponseWriter, req *http.Request) bool {
-	auth := req.Header.Get("Authorization")
+func (f *Filter) PreHandle(ctx *route.Context) error {
+	auth := ctx.Request.Header.Get("Authorization")
 	if auth == "" {
-		w.Header().Set("WWW-Authenticate", `Bearer realm="Login required"`)
-		w.WriteHeader(http.StatusUnauthorized)
-		return false
+		ctx.ResponseWriter.Header().Set("WWW-Authenticate", `Bearer realm="Login required"`)
+		ctx.ResponseWriter.WriteHeader(http.StatusUnauthorized)
+		return ErrUnauthorized
 	}
 
 	scheme, tokenString := parseAuth(auth)
 	if strings.EqualFold(scheme, "Bearer") {
-		w.WriteHeader(http.StatusBadRequest)
-		return false
+		ctx.ResponseWriter.WriteHeader(http.StatusBadRequest)
+		return ErrUnauthorized
 	}
-	_, err := f.TokenDecoder.Decode(f.Secret, tokenString)
+	token, err := f.TokenDecoder.Decode(f.Secret, tokenString)
 	if err == ErrTokenExpired {
-		w.Header().Set("WWW-Authenticate", `Bearer realm="Login required"`)
-		w.WriteHeader(http.StatusUnauthorized)
-		return false
+		ctx.ResponseWriter.Header().Set("WWW-Authenticate", `Bearer realm="Login required"`)
+		ctx.ResponseWriter.WriteHeader(http.StatusUnauthorized)
+		return ErrUnauthorized
 	} else if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		return false
+		ctx.ResponseWriter.WriteHeader(http.StatusBadRequest)
+		return ErrUnauthorized
 	}
-
-	return true
+	registerToken(ctx, &token)
+	return nil
 }
 
-func (f *Filter) PostHandle(w http.ResponseWriter, req *http.Request) bool {
-	return true
+func (f *Filter) PostHandle(ctx *route.Context) error {
+	return nil
 }
 
 func parseAuth(str string) (scheme, token string) {
