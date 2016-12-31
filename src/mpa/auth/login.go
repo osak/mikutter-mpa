@@ -62,7 +62,12 @@ func (controller *LoginCallbackController) Serve(ctx *route.Context) error {
 		fmt.Fprintf(ctx.ResponseWriter, "JWT encode failure: %s", err)
 		return ErrInvalidToken
 	}
-	ctx.ResponseWriter.Header().Set("X-JWT", tokenString)
+
+	authCookie := &http.Cookie{
+		Name:  "AUTH_TOKEN",
+		Value: tokenString,
+	}
+	http.SetCookie(ctx.ResponseWriter, authCookie)
 	http.Redirect(ctx.ResponseWriter, ctx.Request, "/", http.StatusFound)
 	return nil
 }

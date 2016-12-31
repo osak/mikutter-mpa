@@ -20,7 +20,7 @@ func (f *Filter) PreHandle(ctx *route.Context) error {
 	}
 
 	scheme, tokenString := parseAuth(auth)
-	if strings.EqualFold(scheme, "Bearer") {
+	if !strings.EqualFold(scheme, "Bearer") {
 		ctx.ResponseWriter.WriteHeader(http.StatusBadRequest)
 		return ErrUnauthorized
 	}

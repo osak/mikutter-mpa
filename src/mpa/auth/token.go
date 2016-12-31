@@ -28,7 +28,7 @@ type TokenDecoder struct {
 }
 
 func (dec *TokenDecoder) Decode(secret []byte, tokenString string) (Token, error) {
-	jwtToken, err := jwt.Parse(tokenString, func(jwtToken *jwt.Token) (interface{}, error) {
+	jwtToken, err := jwt.ParseWithClaims(tokenString, &jwt.StandardClaims{}, func(jwtToken *jwt.Token) (interface{}, error) {
 		if _, ok := jwtToken.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("Unexpected signing method: %v", jwtToken.Header["alg"])
 		}
@@ -38,7 +38,7 @@ func (dec *TokenDecoder) Decode(secret []byte, tokenString string) (Token, error
 		return Token{}, err
 	}
 
-	claims, ok := jwtToken.Claims.(jwt.StandardClaims)
+	claims, ok := jwtToken.Claims.(*jwt.StandardClaims)
 	if !ok {
 		return Token{}, fmt.Errorf("Invalid token")
 	}

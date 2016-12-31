@@ -10,6 +10,7 @@ import (
 	"mpa/handler"
 	"mpa/model"
 	"mpa/route"
+	"mpa/user"
 	"net/http"
 	"os"
 )
@@ -59,10 +60,11 @@ func main() {
 
 	loginController := &auth.LoginController{}
 	loginCallbackController := &auth.LoginCallbackController{userDAO}
+	currentUserController := &user.CurrentUserController{}
 
 	authFilterChain := route.CreateFilterChain(&auth.Filter{tokenDecoder, []byte{1, 2, 3, 4}})
 	registerAPI("plugin", handler.NewPluginHandler(pluginDAO), handler.NewPluginSearchHandler(pluginDAO))
-	http.Handle("/api/user", authFilterChain.Wrap(route.Wrap(mainPageHandler)))
+	http.Handle("/api/me", authFilterChain.Wrap(currentUserController))
 	http.HandleFunc("/api/auth/login", route.Unwrap(loginController))
 	http.HandleFunc("/api/auth/callback", route.Unwrap(loginCallbackController))
 	http.HandleFunc("/static/", staticFileHandler)
