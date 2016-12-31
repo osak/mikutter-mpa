@@ -6,7 +6,8 @@ import (
 )
 
 type Filter struct {
-	Secret []byte
+	TokenDecoder *TokenDecoder
+	Secret       []byte
 }
 
 func (f *Filter) PreHandle(w http.ResponseWriter, req *http.Request) bool {
@@ -18,12 +19,16 @@ func (f *Filter) PreHandle(w http.ResponseWriter, req *http.Request) bool {
 	}
 
 	scheme, tokenString := parseAuth(auth)
-	if scheme != "Bearer" {
+	if strings.EqualFold(scheme, "Bearer") {
 		w.WriteHeader(http.StatusBadRequest)
 		return false
 	}
-	_, err := decodeToken(f.Secret, tokenString)
-	if err != nil {
+	_, err := f.TokenDecoder.Decode(f.Secret, tokenString)
+	if err == ErrTokenExpired {
+		w.Header().Set("WWW-Authenticate", `Bearer realm="Login required"`)
+		w.WriteHeader(http.StatusUnauthorized)
+		return false
+	} else if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		return false
 	}

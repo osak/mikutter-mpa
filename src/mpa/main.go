@@ -56,8 +56,9 @@ func main() {
 	pluginDAO := model.NewPluginMySQLDAO(db)
 	userDAO := model.NewUserMySQLDAO(db)
 	sessionDAO := model.NewSessionMySQLDAO(db, userDAO)
+	tokenDecoder := &auth.TokenDecoder{userDAO}
 
-	authFilterChain := route.CreateFilterChain(&auth.Filter{[]byte{1, 2, 3, 4}})
+	authFilterChain := route.CreateFilterChain(&auth.Filter{tokenDecoder, []byte{1, 2, 3, 4}})
 	registerAPI("plugin", handler.NewPluginHandler(pluginDAO), handler.NewPluginSearchHandler(pluginDAO))
 	http.Handle("/api/user", authFilterChain.Wrap(mainPageHandler))
 	http.HandleFunc("/api/auth/login", auth.LoginHandler)

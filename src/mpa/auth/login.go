@@ -49,8 +49,7 @@ func LoginCallbackHandler(userDAO model.UserDAO, sessionDAO model.SessionDAO) ht
 			return
 		}
 
-		token := Token{user}
-		tokenString, err := token.encode([]byte{1, 2, 3, 4})
+		tokenString, err := createTokenString(&user, []byte{1, 2, 3, 4})
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			fmt.Fprintf(w, "JWT encode failure: %s", err)
