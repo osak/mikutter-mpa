@@ -34,6 +34,20 @@ function render() {
     ), document.getElementById('main'));
 }
 
+function loadAuthCookie() {
+    let cookies = document.cookie.split(';').reduce((h, p) => {
+        let [key, val] = p.split('=');
+        h[key] = val;
+        return h;
+    }, {});
+    if (cookies['AUTH_TOKEN']) {
+        localStorage.setItem('AUTH_TOKEN', cookies['AUTH_TOKEN']);
+        // Remove cookie
+        document.cookie = 'AUTH_TOKEN=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path="/"';
+    }
+}
+
 window.addEventListener('DOMContentLoaded', () => {
+    loadAuthCookie();
     render();
 });

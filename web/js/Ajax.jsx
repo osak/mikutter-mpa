@@ -1,4 +1,4 @@
-function ajax(url, method, callback) {
+function ajax(url, method, headers, callback) {
     let xhr = new XMLHttpRequest();
     xhr.onreadystatechange = () => {
         if (xhr.readyState < 4 || xhr.status !== 200) {
@@ -9,12 +9,15 @@ function ajax(url, method, callback) {
         }
     }
     xhr.open(method, url, true);
+    for (let [key, val] of headers) {
+        xhr.setRequestHeader(key, val);
+    }
     xhr.send('');
 }
 
-function get(url, params) {
+function get(url, params, headers) {
     return new Promise((resolve, reject) => {
-        ajax(url, 'GET', (response) => {
+        ajax(url, 'GET', headers, (response) => {
             resolve(JSON.parse(response));
         });
     });

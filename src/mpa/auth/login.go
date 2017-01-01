@@ -66,6 +66,7 @@ func (controller *LoginCallbackController) Serve(ctx *route.Context) error {
 	authCookie := &http.Cookie{
 		Name:  "AUTH_TOKEN",
 		Value: tokenString,
+		Path:  "/",
 	}
 	http.SetCookie(ctx.ResponseWriter, authCookie)
 	http.Redirect(ctx.ResponseWriter, ctx.Request, "/", http.StatusFound)
