@@ -1,4 +1,5 @@
 import React from 'react';
+import {Link} from 'react-router';
 import SearchBox from './component/SearchBox.jsx';
 import * as Api from './Api.js';
 
@@ -29,7 +30,7 @@ export default class Search extends React.Component {
         let results = this.state.searchResult.map((spec) => {
             return (
                 <li className="search__result" key={spec.name}>
-                    <div className="search__result__name"><a href={`/plugin/${spec.name}`}>{spec.name}</a></div>
+                    <div className="search__result__name"><Link to={`/plugin/${spec.name}`}>{spec.name}</Link></div>
                     <div className="search__result__version">{spec.version}</div>
                     <div className="search__result__description">{spec.description}</div>
                 </li>

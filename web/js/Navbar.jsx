@@ -1,4 +1,5 @@
 import React from 'react';
+import {Link} from 'react-router';
 import * as Api from './Api.js';
 
 export default class Navbar extends React.Component {
@@ -21,7 +22,7 @@ export default class Navbar extends React.Component {
             <nav className="container">
                 <div className="container-fluid">
                     <div className="navbar-header">
-                        <a className="navbar-brand" href="/">MPA</a>
+                        <Link className="navbar-brand" to="/">MPA</Link>
                     </div>
                     <ul className="nav navbar-nav">
                         {this.pluginAdd()}
@@ -36,16 +37,16 @@ export default class Navbar extends React.Component {
 
     pluginAdd() {
         if (this.state.user) {
-            return (<li><a href="/plugin/add">Add plugin</a></li>);
+            return (<li><Link to="/plugin/add">Add plugin</Link></li>);
         } else {
             return null;
         }
     }
     currentUser() {
         if (this.state.user) {
-            return (<a href="#">{this.state.user.login}</a>);
+            return (<Link to="#">{this.state.user.login}</Link>);
         } else {
-            return (<a href="/api/auth/login">Login</a>);
+            return (<Link to="/api/auth/login">Login</Link>);
         }
     }
 }
