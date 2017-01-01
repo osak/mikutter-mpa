@@ -8,7 +8,7 @@ export default class Plugin extends React.Component {
         this.state = {
             spec: {
                 name: null,
-                repositoryUrl: null,
+                url: null,
                 version: null,
                 description: null
             }
@@ -24,7 +24,7 @@ export default class Plugin extends React.Component {
     }
 
     render() {
-        let repository = this.state.spec.repositoryUrl || '(unpublished)';
+        let repository = this.state.spec.url || '(unpublished)';
         return (
             <div className="plugin">
                 <h1 className="plugin__name">{this.state.spec.name}</h1>
