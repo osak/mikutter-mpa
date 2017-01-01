@@ -23,6 +23,9 @@ export default class Navbar extends React.Component {
                     <div className="navbar-header">
                         <a className="navbar-brand" href="/">MPA</a>
                     </div>
+                    <ul className="nav navbar-nav">
+                        {this.pluginAdd()}
+                    </ul>
                     <ul className="nav navbar-nav navbar-right">
                         <li>{this.currentUser()}</li>
                     </ul>
@@ -31,6 +34,13 @@ export default class Navbar extends React.Component {
         );
     }
 
+    pluginAdd() {
+        if (this.state.user) {
+            return (<li><a href="/plugin/add">Add plugin</a></li>);
+        } else {
+            return null;
+        }
+    }
     currentUser() {
         if (this.state.user) {
             return (<a href="#">{this.state.user.login}</a>);
