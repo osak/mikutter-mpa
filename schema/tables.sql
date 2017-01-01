@@ -1,10 +1,12 @@
 CREATE TABLE IF NOT EXISTS plugins (
     id int NOT NULL AUTO_INCREMENT,
+    user_id int NOT NULL,
     name varchar(256) NOT NULL,
     version varchar(32) NOT NULL,
     description text NOT NULL,
     url varchar(1024) NOT NULL,
-    PRIMARY KEY (id)
+    PRIMARY KEY (id),
+    KEY (user_id)
 );
 
 CREATE TABLE IF NOT EXISTS users(

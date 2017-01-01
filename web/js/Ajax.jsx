@@ -1,4 +1,4 @@
-function ajax(url, method, headers, callback) {
+function ajax(url, method, params, headers, callback) {
     let xhr = new XMLHttpRequest();
     xhr.onreadystatechange = () => {
         if (xhr.readyState < 4 || xhr.status !== 200) {
@@ -12,15 +12,32 @@ function ajax(url, method, headers, callback) {
     for (let [key, val] of headers) {
         xhr.setRequestHeader(key, val);
     }
-    xhr.send('');
+    xhr.send(JSON.stringify(params));
 }
 
 function get(url, params, headers) {
     return new Promise((resolve, reject) => {
-        ajax(url, 'GET', headers, (response) => {
-            resolve(JSON.parse(response));
+        ajax(url, 'GET', null, headers, (response) => {
+            try {
+                resolve(JSON.parse(response));
+            } catch (e) {
+                reject(e);
+            }
         });
     });
 }
 
-export {get};
+function post(url, payload, headers) {
+    return new Promise((resolve, reject) => {
+        ajax(url, 'POST', payload, headers,  (response) => {
+            try {
+                resolve(JSON.parse(response));
+            } catch (e) {
+                reject(e);
+            }
+        });
+    });
+}
+
+
+export {get, post};

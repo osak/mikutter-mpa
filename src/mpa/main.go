@@ -7,17 +7,17 @@ import (
 	"io"
 	"log"
 	"mpa/auth"
-	"mpa/handler"
 	"mpa/model"
+	"mpa/plugin"
 	"mpa/route"
 	"mpa/user"
 	"net/http"
 	"os"
 )
 
-func registerAPI(resource string, showHandler, searchHandler http.Handler) {
-	http.Handle("/api/"+resource+"/", showHandler)
-	http.Handle("/api/"+resource, searchHandler)
+func registerAPI(resource string, router *route.Router, showController, searchController route.Controller) {
+	router.Register("/api/"+resource+"/", showController)
+	router.Register("/api/"+resource, searchController)
 }
 
 func staticFileHandler(w http.ResponseWriter, r *http.Request) {
@@ -53,8 +53,9 @@ func main() {
 	}
 	addr := os.Args[1]
 
+	router := route.NewRouter()
 	db := sqlx.MustConnect("mysql", "mpa@tcp("+addr+":3306)/mpa")
-	pluginDAO := model.NewPluginMySQLDAO(db)
+	pluginDAO := plugin.NewPluginMySQLDAO(db)
 	userDAO := model.NewUserMySQLDAO(db)
 	tokenDecoder := &auth.TokenDecoder{userDAO}
 
@@ -63,10 +64,10 @@ func main() {
 	currentUserController := &user.CurrentUserController{}
 
 	authFilterChain := route.CreateFilterChain(&auth.Filter{tokenDecoder, []byte{1, 2, 3, 4}})
-	registerAPI("plugin", handler.NewPluginHandler(pluginDAO), handler.NewPluginSearchHandler(pluginDAO))
-	http.Handle("/api/me", authFilterChain.Wrap(currentUserController))
-	http.HandleFunc("/api/auth/login", route.Unwrap(loginController))
-	http.HandleFunc("/api/auth/callback", route.Unwrap(loginCallbackController))
+	registerAPI("plugin", router, plugin.NewPluginController(pluginDAO), authFilterChain.Wrap(plugin.NewPluginSearchController(pluginDAO)))
+	router.Register("/api/me", authFilterChain.Wrap(currentUserController))
+	router.Register("/api/auth/login", loginController)
+	router.Register("/api/auth/callback", loginCallbackController)
 	http.HandleFunc("/static/", staticFileHandler)
 	http.HandleFunc("/", mainPageHandler)
 	http.ListenAndServe(":8080", nil)

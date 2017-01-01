@@ -9,7 +9,7 @@ import (
 
 type CurrentUserController struct{}
 
-func (controller CurrentUserController) Serve(ctx *route.Context) error {
+func (controller *CurrentUserController) ServeGet(ctx *route.Context) error {
 	token := auth.GetToken(ctx)
 	if token == nil {
 		ctx.ResponseWriter.WriteHeader(http.StatusUnauthorized)
@@ -20,4 +20,8 @@ func (controller CurrentUserController) Serve(ctx *route.Context) error {
 	enc := json.NewEncoder(ctx.ResponseWriter)
 	enc.Encode(token.User)
 	return nil
+}
+
+func (controller *CurrentUserController) ServePost(ctx *route.Context) error {
+	return route.ErrMethodNotAllowed
 }

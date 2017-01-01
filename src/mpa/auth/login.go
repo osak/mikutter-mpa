@@ -21,18 +21,22 @@ var conf *oauth2.Config = &oauth2.Config{
 
 type LoginController struct{}
 
-func (controller *LoginController) Serve(ctx *route.Context) error {
+func (controller *LoginController) ServeGet(ctx *route.Context) error {
 	url := conf.AuthCodeURL("dummy-state", oauth2.AccessTypeOnline)
 	ctx.ResponseWriter.Header().Set("Location", url)
 	ctx.ResponseWriter.WriteHeader(http.StatusFound)
 	return nil
 }
 
+func (controller *LoginController) ServePost(ctx *route.Context) error {
+	return route.ErrMethodNotAllowed
+}
+
 type LoginCallbackController struct {
 	UserDAO model.UserDAO
 }
 
-func (controller *LoginCallbackController) Serve(ctx *route.Context) error {
+func (controller *LoginCallbackController) ServeGet(ctx *route.Context) error {
 	params := ctx.Request.URL.Query()
 	state := params["state"][0]
 	code := params["code"][0]
@@ -71,6 +75,10 @@ func (controller *LoginCallbackController) Serve(ctx *route.Context) error {
 	http.SetCookie(ctx.ResponseWriter, authCookie)
 	http.Redirect(ctx.ResponseWriter, ctx.Request, "/", http.StatusFound)
 	return nil
+}
+
+func (controller *LoginCallbackController) ServePost(ctx *route.Context) error {
+	return route.ErrMethodNotAllowed
 }
 
 type githubUser struct {

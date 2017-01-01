@@ -1,20 +1,22 @@
-package model
+package plugin
 
 import (
 	"github.com/jmoiron/sqlx"
 )
 
 type Plugin struct {
-	Id          int    `json:"id"`
-	Name        string `json:"name"`
-	Version     string `json:"version"`
-	Description string `json:"description"`
-	Url         string `json:"url"`
+	Id          int    `json:"id,omitempty" db:"id"`
+	UserId      int    `json:"userId,omitempty" db:"user_id"`
+	Name        string `json:"name" db:"name"`
+	Version     string `json:"version" db:"version"`
+	Description string `json:"description" db:"description"`
+	Url         string `json:"url" db:"url"`
 }
 
 type PluginDAO interface {
 	FindPlugin(name string) (Plugin, error)
 	FindPlugins(keyword string) ([]Plugin, error)
+	Create(plugin *Plugin) error
 }
 
 type mysqlPluginDAO struct {
@@ -51,4 +53,17 @@ func (dao *mysqlPluginDAO) FindPlugins(keyword string) ([]Plugin, error) {
 		return plugins, err
 	}
 	return plugins, nil
+}
+
+func (dao *mysqlPluginDAO) Create(plugin *Plugin) error {
+	_, err := dao.db.NamedExec(`INSERT INTO plugins SET
+	user_id=:user_id,
+	name=:name,
+	version=:version,
+	description=:description,
+	url=:url`, plugin)
+	if err != nil {
+		return err
+	}
+	return nil
 }

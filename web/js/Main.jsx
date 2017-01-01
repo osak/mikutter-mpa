@@ -6,6 +6,7 @@ import Top from './Top.jsx';
 import Navbar from './Navbar.jsx';
 import Plugin from './Plugin.jsx';
 import Search from './Search.jsx';
+import RegisterPlugin from './RegisterPlugin.jsx';
 
 class Main extends React.Component {
     render() {
@@ -28,6 +29,7 @@ function render() {
             <Route path="/" component={Main}>
                 <IndexRoute component={Top} />
                 <Route path="/plugin" component={Search} />
+                <Route path="/plugin/add" component={RegisterPlugin} />
                 <Route path="/plugin/:name" component={Plugin} />
             </Route>
         </Router>

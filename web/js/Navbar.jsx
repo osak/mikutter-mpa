@@ -10,7 +10,7 @@ export default class Navbar extends React.Component {
     }
 
     async componentDidMount() {
-        let user = await Api.Me.call();
+        let user = await Api.Me.get();
         this.setState({
             user: user
         });
