@@ -1,6 +1,6 @@
 import React from 'react';
 import SearchBox from './component/SearchBox.jsx';
-import {get} from './Ajax.jsx';
+import * as Api from './Api.js';
 
 export default class Search extends React.Component {
     constructor() {
@@ -12,13 +12,16 @@ export default class Search extends React.Component {
 
     async componentDidMount() {
         let query = this.props.location.query.filter;
-        let result = await get(`/api/plugin?filter=${query}`);
+        let result = await Api.Plugin.get({
+            filter: query
+        });
         this.setState({
             searchResult: result
         });
     }
 
     render() {
+        console.log(this.state);
         let searchFunc = (query) => {
             router.push(`/plugin?filter=${query}`);
         };

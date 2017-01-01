@@ -12,9 +12,13 @@ class Endpoint {
         return BASE_PATH + this.path;
     }
 
-    get() {
+    individual(id) {
+        return new Endpoint(`${this.path}/${id}`, this.needAuth);
+    }
+
+    get(params) {
         let headers = this.buildHeaders();
-        return get(this.fullUri(), '', headers);
+        return get(this.fullUri(), params, headers);
     }
 
     post(payload) {

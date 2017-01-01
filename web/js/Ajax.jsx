@@ -12,12 +12,30 @@ function ajax(url, method, params, headers, callback) {
     for (let [key, val] of headers) {
         xhr.setRequestHeader(key, val);
     }
-    xhr.send(JSON.stringify(params));
+    if (method == 'GET') {
+        xhr.send('');
+    } else if (method == 'POST') {
+        xhr.send(JSON.stringify(params));
+    }
 }
 
 function get(url, params, headers) {
+    var queryString = '';
+    if (params instanceof Map) {
+        queryString = [...params].map(([k, v]) => {
+            return `${k}=${v}`;
+        }).join('&');
+    } else if (params instanceof Object) {
+        queryString = Object.keys(params).map((k) => {
+            return `${k}=${params[k]}`;
+        }).join('&');
+    }
+    var fullUrl = url;
+    if (queryString !== '') {
+        fullUrl += '?' + queryString;
+    }
     return new Promise((resolve, reject) => {
-        ajax(url, 'GET', null, headers, (response) => {
+        ajax(fullUrl, 'GET', null, headers, (response) => {
             try {
                 resolve(JSON.parse(response));
             } catch (e) {

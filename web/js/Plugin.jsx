@@ -1,5 +1,5 @@
 import React from 'react';
-import {get} from './Ajax.jsx';
+import * as Api from './Api.js';
 
 export default class Plugin extends React.Component {
     constructor() {
@@ -17,7 +17,7 @@ export default class Plugin extends React.Component {
 
     async componentDidMount() {
         let pluginName = this.props.params.name;
-        let spec = await get(`/api/plugin/${pluginName}`);
+        let spec = await Api.Plugin.individual(pluginName).get();
         this.setState({
             spec: spec
         });

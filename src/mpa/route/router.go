@@ -16,21 +16,21 @@ func NewRouter() *Router {
 }
 
 func (router *Router) Register(path string, controller Controller) {
-	router.controllers[path] = controller
-	http.Handle(path, router)
+	http.HandleFunc(path, generateHandler(controller))
 }
 
-func (router *Router) ServeHTTP(w http.ResponseWriter, req *http.Request) {
-	controller := router.controllers[req.URL.Path]
-	ctx := NewContext(w, req)
-	var err error
-	switch req.Method {
-	case "GET":
-		err = controller.ServeGet(ctx)
-	case "POST":
-		err = controller.ServePost(ctx)
-	}
-	if err != nil {
-		fmt.Printf("Error during request processing: %v\n", err.Error())
+func generateHandler(controller Controller) func(http.ResponseWriter, *http.Request) {
+	return func(w http.ResponseWriter, req *http.Request) {
+		ctx := NewContext(w, req)
+		var err error
+		switch req.Method {
+		case "GET":
+			err = controller.ServeGet(ctx)
+		case "POST":
+			err = controller.ServePost(ctx)
+		}
+		if err != nil {
+			fmt.Printf("Error during request processing: %v\n", err.Error())
+		}
 	}
 }
