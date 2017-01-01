@@ -28,10 +28,6 @@ func (controller *LoginController) ServeGet(ctx *route.Context) error {
 	return nil
 }
 
-func (controller *LoginController) ServePost(ctx *route.Context) error {
-	return route.ErrMethodNotAllowed
-}
-
 type LoginCallbackController struct {
 	UserDAO model.UserDAO
 }
@@ -75,10 +71,6 @@ func (controller *LoginCallbackController) ServeGet(ctx *route.Context) error {
 	http.SetCookie(ctx.ResponseWriter, authCookie)
 	http.Redirect(ctx.ResponseWriter, ctx.Request, "/", http.StatusFound)
 	return nil
-}
-
-func (controller *LoginCallbackController) ServePost(ctx *route.Context) error {
-	return route.ErrMethodNotAllowed
 }
 
 type githubUser struct {

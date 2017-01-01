@@ -15,11 +15,6 @@ import (
 	"os"
 )
 
-func registerAPI(resource string, router *route.Router, showController, searchController route.Controller) {
-	router.Register("/api/"+resource+"/", showController)
-	router.Register("/api/"+resource, searchController)
-}
-
 func staticFileHandler(w http.ResponseWriter, r *http.Request) {
 	path := r.URL.Path
 	f, err := os.Open("/app/web/" + path)
@@ -59,15 +54,19 @@ func main() {
 	userDAO := model.NewUserMySQLDAO(db)
 	tokenDecoder := &auth.TokenDecoder{userDAO}
 
+	pluginController := &plugin.PluginController{pluginDAO}
+	pluginEntryController := &plugin.PluginEntryController{pluginDAO}
 	loginController := &auth.LoginController{}
 	loginCallbackController := &auth.LoginCallbackController{userDAO}
 	currentUserController := &user.CurrentUserController{}
 
 	authFilterChain := route.CreateFilterChain(&auth.Filter{tokenDecoder, []byte{1, 2, 3, 4}})
-	registerAPI("plugin", router, plugin.NewPluginController(pluginDAO), authFilterChain.Wrap(plugin.NewPluginSearchController(pluginDAO)))
-	router.Register("/api/me", authFilterChain.Wrap(currentUserController))
-	router.Register("/api/auth/login", loginController)
-	router.Register("/api/auth/callback", loginCallbackController)
+	router.RegisterGet("/api/plugin/", pluginEntryController)
+	router.RegisterGet("/api/plugin", pluginController)
+	router.RegisterPost("/api/plugin", authFilterChain.WrapPost(pluginController))
+	router.RegisterGet("/api/me", authFilterChain.WrapGet(currentUserController))
+	router.RegisterGet("/api/auth/login", loginController)
+	router.RegisterGet("/api/auth/callback", loginCallbackController)
 	http.HandleFunc("/static/", staticFileHandler)
 	http.HandleFunc("/", mainPageHandler)
 	http.ListenAndServe(":8080", nil)

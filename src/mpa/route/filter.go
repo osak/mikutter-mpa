@@ -16,34 +16,46 @@ func CreateFilterChain(filters ...Filter) *FilterChain {
 	return &chain
 }
 
-func (fc *FilterChain) Wrap(controller Controller) Controller {
-	return &internalHandler{
+func (fc *FilterChain) WrapGet(controller GetController) GetController {
+	return &internalGetHandler{
 		filterChain: fc,
 		controller:  controller,
 	}
 }
 
-type internalHandler struct {
-	filterChain *FilterChain
-	controller  Controller
+func (fc *FilterChain) WrapPost(controller PostController) PostController {
+	return &internalPostHandler{
+		filterChain: fc,
+		controller:  controller,
+	}
 }
 
-func (handler *internalHandler) ServeGet(ctx *Context) error {
-	return handler.processFilter(ctx, func(ctx *Context) error {
+type internalGetHandler struct {
+	filterChain *FilterChain
+	controller  GetController
+}
+
+type internalPostHandler struct {
+	filterChain *FilterChain
+	controller  PostController
+}
+
+func (handler *internalGetHandler) ServeGet(ctx *Context) error {
+	return processFilter(handler.filterChain, ctx, func(ctx *Context) error {
 		return handler.controller.ServeGet(ctx)
 	})
 }
 
-func (handler *internalHandler) ServePost(ctx *Context) error {
-	return handler.processFilter(ctx, func(ctx *Context) error {
+func (handler *internalPostHandler) ServePost(ctx *Context) error {
+	return processFilter(handler.filterChain, ctx, func(ctx *Context) error {
 		return handler.controller.ServePost(ctx)
 	})
 }
 
-func (handler *internalHandler) processFilter(ctx *Context, callback func(*Context) error) error {
+func processFilter(filterChain *FilterChain, ctx *Context, callback func(*Context) error) error {
 	lastProcessed := -1
 	lastCompleted := -1
-	for i, f := range *handler.filterChain {
+	for i, f := range *filterChain {
 		lastProcessed = i
 		if err := f.PreHandle(ctx); err != nil {
 			break
@@ -57,7 +69,7 @@ func (handler *internalHandler) processFilter(ctx *Context, callback func(*Conte
 		}
 	}
 	for i := lastProcessed; i >= 0; i-- {
-		f := (*handler.filterChain)[i]
+		f := (*filterChain)[i]
 		f.PostHandle(ctx)
 	}
 	return nil

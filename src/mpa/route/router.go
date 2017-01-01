@@ -6,28 +6,50 @@ import (
 )
 
 type Router struct {
-	controllers map[string]Controller
+	getControllers  map[string]GetController
+	postControllers map[string]PostController
+	handlerFuncs    map[string]func(http.ResponseWriter, *http.Request)
 }
 
 func NewRouter() *Router {
 	return &Router{
-		make(map[string]Controller),
+		getControllers:  make(map[string]GetController),
+		postControllers: make(map[string]PostController),
+		handlerFuncs:    make(map[string]func(http.ResponseWriter, *http.Request)),
 	}
 }
 
-func (router *Router) Register(path string, controller Controller) {
-	http.HandleFunc(path, generateHandler(controller))
+func (router *Router) RegisterGet(path string, controller GetController) {
+	router.getControllers[path] = controller
+	router.registerHandler(path)
 }
 
-func generateHandler(controller Controller) func(http.ResponseWriter, *http.Request) {
+func (router *Router) RegisterPost(path string, controller PostController) {
+	router.postControllers[path] = controller
+	router.registerHandler(path)
+}
+
+func (router *Router) registerHandler(path string) {
+	if _, ok := router.handlerFuncs[path]; !ok {
+		handler := generateHandler(path, router)
+		router.handlerFuncs[path] = handler
+		http.HandleFunc(path, handler)
+	}
+}
+
+func generateHandler(path string, router *Router) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, req *http.Request) {
 		ctx := NewContext(w, req)
 		var err error
 		switch req.Method {
 		case "GET":
-			err = controller.ServeGet(ctx)
+			if ctl, ok := router.getControllers[path]; ok {
+				err = ctl.ServeGet(ctx)
+			}
 		case "POST":
-			err = controller.ServePost(ctx)
+			if ctl, ok := router.postControllers[path]; ok {
+				err = ctl.ServePost(ctx)
+			}
 		}
 		if err != nil {
 			fmt.Printf("Error during request processing: %v\n", err.Error())
