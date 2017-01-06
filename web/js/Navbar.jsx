@@ -46,7 +46,7 @@ export default class Navbar extends React.Component {
         if (this.state.user) {
             return (<Link to="#">{this.state.user.login}</Link>);
         } else {
-            return (<Link to="/api/auth/login">Login</Link>);
+            return (<a href="/api/auth/login">Login</a>);
         }
     }
 }
