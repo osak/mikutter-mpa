@@ -4,4 +4,5 @@ node_modules
 web-build
 src/github.com
 src/golang.org
+src/gopkg.in
 mysql
