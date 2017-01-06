@@ -1,0 +1,9 @@
+---
+slug: :test_plugin
+depends:
+  mikutter: 3.5.1
+  plugin: ['gui', 'gtk']
+version: '1.0'
+author: osa_k
+name: Test plugin
+description: This is a test plugin
