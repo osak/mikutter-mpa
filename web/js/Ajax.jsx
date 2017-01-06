@@ -15,7 +15,11 @@ function ajax(url, method, params, headers, callback) {
     if (method == 'GET') {
         xhr.send('');
     } else if (method == 'POST') {
-        xhr.send(JSON.stringify(params));
+        if (params instanceof FormData) {
+            xhr.send(params);
+        } else {
+            xhr.send(JSON.stringify(params));
+        }
     }
 }
 
