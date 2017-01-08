@@ -1,18 +1,22 @@
-package auth
+package model
 
 import (
+	"errors"
 	"fmt"
 	jwt "github.com/dgrijalva/jwt-go"
-	"mpa/model"
-	"mpa/route"
 	"time"
 )
 
+var (
+	ErrTokenExpired = errors.New("mpa/model: Token expired")
+	ErrInvalidToken = errors.New("mpa/model: Invalid token string")
+)
+
 type Token struct {
-	User model.User
+	User User
 }
 
-func createTokenString(user *model.User, secret []byte) (string, error) {
+func CreateTokenString(user User, secret []byte) (string, error) {
 	now := time.Now()
 	claims := jwt.StandardClaims{
 		Id:        user.Login,
@@ -24,7 +28,7 @@ func createTokenString(user *model.User, secret []byte) (string, error) {
 }
 
 type TokenDecoder struct {
-	UserDAO model.UserDAO
+	UserDAO UserDAO
 }
 
 func (dec *TokenDecoder) Decode(secret []byte, tokenString string) (Token, error) {
@@ -40,7 +44,7 @@ func (dec *TokenDecoder) Decode(secret []byte, tokenString string) (Token, error
 
 	claims, ok := jwtToken.Claims.(*jwt.StandardClaims)
 	if !ok {
-		return Token{}, fmt.Errorf("Invalid token")
+		return Token{}, ErrInvalidToken
 	}
 	if err := claims.Valid(); err == nil {
 		user, err := dec.UserDAO.FindByLogin(claims.Id)
@@ -57,20 +61,5 @@ func (dec *TokenDecoder) Decode(secret []byte, tokenString string) (Token, error
 			}
 		}
 		return Token{}, err
-	}
-}
-
-const tokenAttributeName = "auth/token"
-
-func registerToken(ctx *route.Context, token *Token) {
-	ctx.PutAttribute(tokenAttributeName, token)
-}
-
-func GetToken(ctx *route.Context) *Token {
-	obj := ctx.GetAttribute(tokenAttributeName)
-	if token, ok := obj.(*Token); ok {
-		return token
-	} else {
-		return nil
 	}
 }

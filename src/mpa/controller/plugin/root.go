@@ -5,7 +5,8 @@ import (
 	"errors"
 	"io"
 	"io/ioutil"
-	"mpa/auth"
+	"mpa/filter"
+	"mpa/model"
 	"mpa/route"
 	"net/http"
 	"os"
@@ -13,7 +14,7 @@ import (
 )
 
 type PluginController struct {
-	PluginDAO PluginDAO
+	PluginDAO model.PluginDAO
 }
 
 func (c *PluginController) ServeGet(ctx *route.Context) error {
@@ -22,7 +23,7 @@ func (c *PluginController) ServeGet(ctx *route.Context) error {
 	enc := json.NewEncoder(ctx.ResponseWriter)
 	ctx.ResponseWriter.Header().Set("Content-Type", "application/json")
 
-	plugins, err := c.PluginDAO.FindPlugins(filter)
+	plugins, err := c.PluginDAO.FindByKeyword(filter)
 	if err != nil {
 		enc.Encode(map[string]string{"error": err.Error()})
 	} else {
@@ -59,13 +60,13 @@ func (c *PluginController) ServePost(ctx *route.Context) error {
 			if err != nil {
 				return err
 			}
-			plugin := Plugin{
+			plugin := model.Plugin{
 				Name:        spec.Name,
 				Version:     spec.Version,
 				Description: spec.Description,
 			}
-			token := auth.GetToken(ctx)
-			plugin.UserId = token.User.Id
+			token := filter.GetToken(ctx)
+			plugin.Author = token.User
 			err = c.PluginDAO.Create(&plugin)
 			if err != nil {
 				return err
@@ -90,7 +91,7 @@ func saveFile(data []byte) (*os.File, error) {
 }
 
 type PluginEntryController struct {
-	PluginDAO PluginDAO
+	PluginDAO model.PluginDAO
 }
 
 func (c *PluginEntryController) ServeGet(ctx *route.Context) error {
@@ -99,7 +100,7 @@ func (c *PluginEntryController) ServeGet(ctx *route.Context) error {
 	enc := json.NewEncoder(ctx.ResponseWriter)
 	ctx.ResponseWriter.Header().Set("Content-Type", "application/json")
 
-	plugin, err := c.PluginDAO.FindPlugin(name)
+	plugin, err := c.PluginDAO.FindByName(name)
 	if err != nil {
 		ctx.ResponseWriter.WriteHeader(http.StatusNotFound)
 		enc.Encode(map[string]string{"error": err.Error()})

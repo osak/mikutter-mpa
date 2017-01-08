@@ -24,7 +24,7 @@ export default class Search extends React.Component {
     render() {
         console.log(this.state);
         let searchFunc = (query) => {
-            router.push(`/plugin?filter=${query}`);
+            this.props.router.push(`/plugin?filter=${query}`);
         };
 
         let results = this.state.searchResult.map((spec) => {

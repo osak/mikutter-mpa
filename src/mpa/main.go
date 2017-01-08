@@ -2,15 +2,15 @@ package main
 
 import (
 	"fmt"
-	_ "github.com/go-sql-driver/mysql"
-	"github.com/jmoiron/sqlx"
+	"gopkg.in/mgo.v2"
 	"io"
 	"log"
-	"mpa/auth"
+	"mpa/controller/auth"
+	"mpa/controller/plugin"
+	"mpa/controller/user"
+	"mpa/filter"
 	"mpa/model"
-	"mpa/plugin"
 	"mpa/route"
-	"mpa/user"
 	"net/http"
 	"os"
 )
@@ -44,15 +44,19 @@ func mainPageHandler(w http.ResponseWriter, r *http.Request) {
 
 func main() {
 	if len(os.Args) < 2 {
-		log.Fatalf("Usage: %s MYSQL_SERVER_ADDRESS", os.Args[0])
+		log.Fatalf("Usage: %s MONGO_SERVER_ADDRESS", os.Args[0])
 	}
 	addr := os.Args[1]
 
 	router := route.NewRouter()
-	db := sqlx.MustConnect("mysql", "mpa@tcp("+addr+":3306)/mpa")
-	pluginDAO := plugin.NewPluginMySQLDAO(db)
-	userDAO := model.NewUserMySQLDAO(db)
-	tokenDecoder := &auth.TokenDecoder{userDAO}
+	session, err := mgo.Dial(addr)
+	if err != nil {
+		panic("Cannot connect mongo: " + err.Error())
+	}
+	db := session.DB("mpa")
+	pluginDAO := &model.MongoPluginDAO{db.C("plugins")}
+	userDAO := &model.MongoUserDAO{db.C("users")}
+	tokenDecoder := &model.TokenDecoder{userDAO}
 
 	pluginController := &plugin.PluginController{pluginDAO}
 	pluginEntryController := &plugin.PluginEntryController{pluginDAO}
@@ -60,7 +64,7 @@ func main() {
 	loginCallbackController := &auth.LoginCallbackController{userDAO}
 	currentUserController := &user.CurrentUserController{}
 
-	authFilterChain := route.CreateFilterChain(&auth.Filter{tokenDecoder, []byte{1, 2, 3, 4}})
+	authFilterChain := route.CreateFilterChain(&filter.LoginFilter{tokenDecoder, []byte{1, 2, 3, 4}})
 	router.RegisterGet("/api/plugin/", pluginEntryController)
 	router.RegisterGet("/api/plugin", pluginController)
 	router.RegisterPost("/api/plugin", authFilterChain.WrapPost(pluginController))

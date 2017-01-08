@@ -2,7 +2,7 @@ package user
 
 import (
 	"encoding/json"
-	"mpa/auth"
+	"mpa/filter"
 	"mpa/route"
 	"net/http"
 )
@@ -10,10 +10,10 @@ import (
 type CurrentUserController struct{}
 
 func (controller *CurrentUserController) ServeGet(ctx *route.Context) error {
-	token := auth.GetToken(ctx)
+	token := filter.GetToken(ctx)
 	if token == nil {
 		ctx.ResponseWriter.WriteHeader(http.StatusUnauthorized)
-		return auth.ErrUnauthorized
+		return filter.ErrUnauthenticated
 	}
 
 	ctx.ResponseWriter.Header().Set("Content-Type", "application/json")

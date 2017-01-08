@@ -38,7 +38,7 @@ func (controller *LoginCallbackController) ServeGet(ctx *route.Context) error {
 	code := params["code"][0]
 	if state != "dummy-state" {
 		ctx.ResponseWriter.WriteHeader(http.StatusBadRequest)
-		return ErrInvalidToken
+		return model.ErrInvalidToken
 	}
 
 	httpContext := context.Background()
@@ -46,21 +46,21 @@ func (controller *LoginCallbackController) ServeGet(ctx *route.Context) error {
 	if err != nil {
 		ctx.ResponseWriter.WriteHeader(http.StatusInternalServerError)
 		fmt.Fprintf(ctx.ResponseWriter, "Exchange failure: %s", err)
-		return ErrInvalidToken
+		return model.ErrInvalidToken
 	}
 	client := conf.Client(httpContext, tok)
 	user, err := findOrCreateAuthenticatedUser(client, controller.UserDAO)
 	if err != nil {
 		ctx.ResponseWriter.WriteHeader(http.StatusInternalServerError)
 		fmt.Fprintf(ctx.ResponseWriter, "DB lookup failure: %s", err)
-		return ErrInvalidToken
+		return model.ErrInvalidToken
 	}
 
-	tokenString, err := createTokenString(&user, []byte{1, 2, 3, 4})
+	tokenString, err := model.CreateTokenString(user, []byte{1, 2, 3, 4})
 	if err != nil {
 		ctx.ResponseWriter.WriteHeader(http.StatusInternalServerError)
 		fmt.Fprintf(ctx.ResponseWriter, "JWT encode failure: %s", err)
-		return ErrInvalidToken
+		return model.ErrInvalidToken
 	}
 
 	authCookie := &http.Cookie{
@@ -90,12 +90,17 @@ func findOrCreateAuthenticatedUser(client *http.Client, userDAO model.UserDAO) (
 		return model.User{}, err
 	}
 
-	user, err := userDAO.FindByLogin(githubUser.Login)
+	usr, err := userDAO.FindByLogin(githubUser.Login)
 	if err == model.ErrNoEntry {
-		user, err = userDAO.Create(model.User{
+		usr = model.User{
 			Login: githubUser.Login,
 			Name:  githubUser.Name,
-		})
+		}
+		_, err = userDAO.Create(&usr)
+		if err != nil {
+			return model.User{}, nil
+		}
+		return usr, nil
 	}
-	return user, err
+	return usr, err
 }

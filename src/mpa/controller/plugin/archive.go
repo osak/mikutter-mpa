@@ -2,9 +2,15 @@ package plugin
 
 import (
 	"archive/zip"
+	"errors"
 	"gopkg.in/yaml.v2"
 	"io"
 	"strings"
+)
+
+var (
+	ErrTooLargeMikutterYml = errors.New("mpa/controller/plugin: .mikutter.yml is too large")
+	ErrMikutterYmlNotFound = errors.New("mpa/controller/plugin: .mikutter.yml is not found")
 )
 
 type Spec struct {

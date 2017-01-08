@@ -1,53 +1,95 @@
 package model
 
 import (
-	"database/sql"
-	"github.com/jmoiron/sqlx"
+	"errors"
+	"fmt"
+	"gopkg.in/mgo.v2"
+	"gopkg.in/mgo.v2/bson"
+)
+
+var (
+	ErrNoEntry = errors.New("mpa/model: No user entry exists")
 )
 
 type User struct {
-	Id    int    `json:"id"`
-	Login string `json:"login"`
-	Name  string `json:"name"`
+	Login string `bson:"login" json:"login"`
+	Name  string `bson:"name" json:"name"`
+
+	id    bson.ObjectId
+	exact bool
+}
+
+// Exact returns true iff the object is based on a DB entry.
+// An object is considered based on a DB entry when any of following conditions
+// are satisfied:
+// - The object is read from DB
+// - The object has been written out into DB
+func (u *User) Exact() bool {
+	return u.exact
 }
 
 type UserDAO interface {
-	FindById(id int) (User, error)
 	FindByLogin(login string) (User, error)
-	Create(user User) (User, error)
+	Create(user *User) (*User, error)
 }
 
-type mysqlUserDAO struct {
-	db *sqlx.DB
+type MongoUserDAO struct {
+	Collection *mgo.Collection
 }
 
-func NewUserMySQLDAO(db *sqlx.DB) UserDAO {
-	dao := new(mysqlUserDAO)
-	dao.db = db
-	return dao
+type mongoUser struct {
+	Id    bson.ObjectId `bson:"_id"`
+	Login string
+	Name  string
 }
 
-func (dao *mysqlUserDAO) FindById(id int) (User, error) {
-	user := User{}
-	err := dao.db.Get(&user, `SELECT * FROM users WHERE id=?`, id)
-	return user, err
-}
-
-func (dao *mysqlUserDAO) FindByLogin(login string) (User, error) {
-	user := User{}
-	err := dao.db.Get(&user, `SELECT * FROM users WHERE login=?`, login)
-	if err == sql.ErrNoRows {
-		return User{}, ErrNoEntry
+func (mu mongoUser) buildUser() User {
+	return User{
+		Login: mu.Login,
+		Name:  mu.Name,
+		id:    mu.Id,
+		exact: true,
 	}
-	return user, err
 }
 
-func (dao *mysqlUserDAO) Create(user User) (User, error) {
-	result, err := dao.db.NamedExec(`INSERT INTO users (login, name) VALUES (:login, :name)`, user)
-	if err != nil {
+func userFromMongoId(id bson.ObjectId) User {
+	return User{
+		id: id,
+	}
+}
+
+func (dao *MongoUserDAO) FindByLogin(login string) (User, error) {
+	mu := mongoUser{}
+	err := dao.Collection.Find(bson.M{
+		"login": login,
+	}).One(&mu)
+	switch {
+	case err == mgo.ErrNotFound:
+		return User{}, ErrNoEntry
+	case err != nil:
 		return User{}, err
 	}
-	id, err := result.LastInsertId()
-	user.Id = int(id)
-	return user, err
+	return mu.buildUser(), nil
+}
+
+func (dao *MongoUserDAO) Create(user *User) (*User, error) {
+	if _, err := dao.FindByLogin(user.Login); err != ErrNoEntry {
+		if err == nil {
+			return user, fmt.Errorf("mpa/user: Duplicate user %v", user.Login)
+		} else {
+			return user, err
+		}
+	}
+
+	info, err := dao.Collection.Upsert(bson.M{"login": user.Login}, &user)
+	if err != nil {
+		return user, err
+	}
+	if bsonId, ok := info.UpsertedId.(bson.ObjectId); ok {
+		user.id = bsonId
+		user.exact = true
+		return user, nil
+	} else {
+		return nil, fmt.Errorf("mpa/model: Unexpected id type: %T", info.UpsertedId)
+	}
 }

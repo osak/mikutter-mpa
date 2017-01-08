@@ -11,6 +11,9 @@ export default class Plugin extends React.Component {
                 url: null,
                 version: null,
                 description: null
+            },
+            user: {
+                name: null
             }
         };
     }
@@ -26,16 +29,21 @@ export default class Plugin extends React.Component {
     render() {
         let repository = this.state.spec.url || '(unpublished)';
         return (
-            <div className="plugin">
-                <h1 className="plugin__name">{this.state.spec.name}</h1>
-                <div className="plugin__version">{this.state.spec.version}</div>
-                <div className="plugin__description">{this.state.spec.description}</div>
-                <div className="plugin__repository form-inline">
-                    <div className="form-group">
-                        <label htmlFor="repository" className="plugin__repository__label">URL</label>
-                        <input name="repository" className="form-control" type="text" value={repository} readOnly onClick={this.onTextboxClick}/>
+            <div>
+                <section className="plugin">
+                    <h1 className="plugin__name">{this.state.spec.name}</h1>
+                    <div className="plugin__version">{this.state.spec.version}</div>
+                    <div className="plugin__description">{this.state.spec.description}</div>
+                    <div className="plugin__repository form-inline">
+                        <div className="form-group">
+                            <label htmlFor="repository" className="plugin__repository__label">URL</label>
+                            <input name="repository" className="form-control" type="text" value={repository} readOnly onClick={this.onTextboxClick}/>
+                        </div>
                     </div>
-                </div>
+                </section>
+                <section className="user">
+                    <h2 className="user__name">{this.state.user.name}</h2>
+                </section>
             </div>
         );
     }
