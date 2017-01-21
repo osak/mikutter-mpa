@@ -1,14 +1,13 @@
 package plugin
 
 import (
-	"encoding/json"
 	"errors"
 	"io"
 	"io/ioutil"
 	"mpa/filter"
 	"mpa/model"
 	"mpa/route"
-	"net/http"
+	view "mpa/view/plugin"
 	"os"
 	"strings"
 )
@@ -17,25 +16,24 @@ type PluginController struct {
 	PluginDAO model.PluginDAO
 }
 
-func (c *PluginController) ServeGet(ctx *route.Context) error {
+func (c *PluginController) ServeGet(ctx *route.Context) (route.View, error) {
 	params := ctx.Request.URL.Query()
 	filter := params["filter"][0]
-	enc := json.NewEncoder(ctx.ResponseWriter)
 	ctx.ResponseWriter.Header().Set("Content-Type", "application/json")
 
 	plugins, err := c.PluginDAO.FindByKeyword(filter)
 	if err != nil {
-		enc.Encode(map[string]string{"error": err.Error()})
-	} else {
-		enc.Encode(plugins)
+		return nil, err
 	}
-	return nil
+	return &view.SearchView{
+		Plugins: plugins,
+	}, nil
 }
 
-func (c *PluginController) ServePost(ctx *route.Context) error {
+func (c *PluginController) ServePost(ctx *route.Context) (route.View, error) {
 	r, err := ctx.Request.MultipartReader()
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	for {
@@ -44,21 +42,21 @@ func (c *PluginController) ServePost(ctx *route.Context) error {
 			break
 		}
 		if err != nil {
-			return err
+			return nil, err
 		}
 		if p.FormName() == "plugin-archive" {
 			data, err := ioutil.ReadAll(p)
 			if err != nil {
-				return err
+				return nil, err
 			}
 			f, err := saveFile(data)
 			if err != nil {
-				return err
+				return nil, err
 			}
 
 			spec, err := LoadSpec(f.Name())
 			if err != nil {
-				return err
+				return nil, err
 			}
 			plugin := model.Plugin{
 				Name:        spec.Name,
@@ -69,14 +67,14 @@ func (c *PluginController) ServePost(ctx *route.Context) error {
 			plugin.Author = token.User
 			err = c.PluginDAO.Create(&plugin)
 			if err != nil {
-				return err
+				return nil, err
 			}
-			ctx.ResponseWriter.Header().Set("Content-Type", "application/json")
-			ctx.ResponseWriter.Write([]byte("{}"))
-			return nil
+			return &view.EntryView{
+				Plugin: plugin,
+			}, nil
 		}
 	}
-	return errors.New("mpa/plugin: plugin-archive entity does not found")
+	return nil, errors.New("mpa/plugin: plugin-archive entity does not found")
 }
 
 func saveFile(data []byte) (*os.File, error) {
@@ -92,20 +90,21 @@ func saveFile(data []byte) (*os.File, error) {
 
 type PluginEntryController struct {
 	PluginDAO model.PluginDAO
+	UserDAO   model.UserDAO
 }
 
-func (c *PluginEntryController) ServeGet(ctx *route.Context) error {
+// ServeGet implements GetController
+func (c *PluginEntryController) ServeGet(ctx *route.Context) (route.View, error) {
 	components := strings.SplitN(ctx.Request.URL.Path, "/", 4)
 	name := components[3]
-	enc := json.NewEncoder(ctx.ResponseWriter)
 	ctx.ResponseWriter.Header().Set("Content-Type", "application/json")
 
 	plugin, err := c.PluginDAO.FindByName(name)
 	if err != nil {
-		ctx.ResponseWriter.WriteHeader(http.StatusNotFound)
-		enc.Encode(map[string]string{"error": err.Error()})
-	} else {
-		enc.Encode(plugin)
+		return nil, err
 	}
-	return nil
+	c.UserDAO.Fill(&plugin.Author)
+	return &view.EntryView{
+		Plugin: plugin,
+	}, nil
 }

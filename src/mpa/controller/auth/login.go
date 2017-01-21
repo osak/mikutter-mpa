@@ -9,6 +9,7 @@ import (
 	"io"
 	"mpa/model"
 	"mpa/route"
+	utilview "mpa/view/util"
 	"net/http"
 	"os"
 )
@@ -21,24 +22,26 @@ var conf *oauth2.Config = &oauth2.Config{
 
 type LoginController struct{}
 
-func (controller *LoginController) ServeGet(ctx *route.Context) error {
+// ServeGet implements route.GetController
+func (controller *LoginController) ServeGet(ctx *route.Context) (route.View, error) {
 	url := conf.AuthCodeURL("dummy-state", oauth2.AccessTypeOnline)
-	ctx.ResponseWriter.Header().Set("Location", url)
-	ctx.ResponseWriter.WriteHeader(http.StatusFound)
-	return nil
+	return &utilview.RedirectView{
+		Url: url,
+	}, nil
 }
 
 type LoginCallbackController struct {
 	UserDAO model.UserDAO
 }
 
-func (controller *LoginCallbackController) ServeGet(ctx *route.Context) error {
+// ServeGet implements route.GetController
+func (controller *LoginCallbackController) ServeGet(ctx *route.Context) (route.View, error) {
 	params := ctx.Request.URL.Query()
 	state := params["state"][0]
 	code := params["code"][0]
 	if state != "dummy-state" {
 		ctx.ResponseWriter.WriteHeader(http.StatusBadRequest)
-		return model.ErrInvalidToken
+		return nil, model.ErrInvalidToken
 	}
 
 	httpContext := context.Background()
@@ -46,21 +49,21 @@ func (controller *LoginCallbackController) ServeGet(ctx *route.Context) error {
 	if err != nil {
 		ctx.ResponseWriter.WriteHeader(http.StatusInternalServerError)
 		fmt.Fprintf(ctx.ResponseWriter, "Exchange failure: %s", err)
-		return model.ErrInvalidToken
+		return nil, model.ErrInvalidToken
 	}
 	client := conf.Client(httpContext, tok)
 	user, err := findOrCreateAuthenticatedUser(client, controller.UserDAO)
 	if err != nil {
 		ctx.ResponseWriter.WriteHeader(http.StatusInternalServerError)
 		fmt.Fprintf(ctx.ResponseWriter, "DB lookup failure: %s", err)
-		return model.ErrInvalidToken
+		return nil, model.ErrInvalidToken
 	}
 
 	tokenString, err := model.CreateTokenString(user, []byte{1, 2, 3, 4})
 	if err != nil {
 		ctx.ResponseWriter.WriteHeader(http.StatusInternalServerError)
 		fmt.Fprintf(ctx.ResponseWriter, "JWT encode failure: %s", err)
-		return model.ErrInvalidToken
+		return nil, model.ErrInvalidToken
 	}
 
 	authCookie := &http.Cookie{
@@ -69,8 +72,9 @@ func (controller *LoginCallbackController) ServeGet(ctx *route.Context) error {
 		Path:  "/",
 	}
 	http.SetCookie(ctx.ResponseWriter, authCookie)
-	http.Redirect(ctx.ResponseWriter, ctx.Request, "/", http.StatusFound)
-	return nil
+	return &utilview.RedirectView{
+		Url: "/",
+	}, nil
 }
 
 type githubUser struct {

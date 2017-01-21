@@ -59,7 +59,7 @@ func main() {
 	tokenDecoder := &model.TokenDecoder{userDAO}
 
 	pluginController := &plugin.PluginController{pluginDAO}
-	pluginEntryController := &plugin.PluginEntryController{pluginDAO}
+	pluginEntryController := &plugin.PluginEntryController{pluginDAO, userDAO}
 	loginController := &auth.LoginController{}
 	loginCallbackController := &auth.LoginCallbackController{userDAO}
 	currentUserController := &user.CurrentUserController{}

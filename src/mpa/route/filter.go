@@ -1,8 +1,6 @@
 package route
 
-import (
-	"fmt"
-)
+import ()
 
 type Filter interface {
 	PreHandle(ctx *Context) error
@@ -40,37 +38,27 @@ type internalPostHandler struct {
 	controller  PostController
 }
 
-func (handler *internalGetHandler) ServeGet(ctx *Context) error {
-	return processFilter(handler.filterChain, ctx, func(ctx *Context) error {
+// ServeGet implements GetController
+func (handler *internalGetHandler) ServeGet(ctx *Context) (View, error) {
+	return processFilter(handler.filterChain, ctx, func(ctx *Context) (View, error) {
 		return handler.controller.ServeGet(ctx)
 	})
 }
 
-func (handler *internalPostHandler) ServePost(ctx *Context) error {
-	return processFilter(handler.filterChain, ctx, func(ctx *Context) error {
+// ServePost implements PostController
+func (handler *internalPostHandler) ServePost(ctx *Context) (View, error) {
+	return processFilter(handler.filterChain, ctx, func(ctx *Context) (View, error) {
 		return handler.controller.ServePost(ctx)
 	})
 }
 
-func processFilter(filterChain *FilterChain, ctx *Context, callback func(*Context) error) error {
-	lastProcessed := -1
-	lastCompleted := -1
-	for i, f := range *filterChain {
-		lastProcessed = i
-		if err := f.PreHandle(ctx); err != nil {
-			break
-		}
-		lastCompleted = i
-	}
-	if lastCompleted == lastProcessed {
-		err := callback(ctx)
+func processFilter(filterChain *FilterChain, ctx *Context, callback func(*Context) (View, error)) (View, error) {
+	for _, f := range *filterChain {
+		err := f.PreHandle(ctx)
+		defer f.PostHandle(ctx)
 		if err != nil {
-			fmt.Printf("Error: %v\n", err.Error())
+			return nil, err
 		}
 	}
-	for i := lastProcessed; i >= 0; i-- {
-		f := (*filterChain)[i]
-		f.PostHandle(ctx)
-	}
-	return nil
+	return callback(ctx)
 }

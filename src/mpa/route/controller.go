@@ -1,9 +1,9 @@
 package route
 
 type GetController interface {
-	ServeGet(*Context) error
+	ServeGet(*Context) (View, error)
 }
 
 type PostController interface {
-	ServePost(*Context) error
+	ServePost(*Context) (View, error)
 }

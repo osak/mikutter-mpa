@@ -31,6 +31,7 @@ func (u *User) Exact() bool {
 type UserDAO interface {
 	FindByLogin(login string) (User, error)
 	Create(user *User) (*User, error)
+	Fill(user *User) error
 }
 
 type MongoUserDAO struct {
@@ -92,4 +93,19 @@ func (dao *MongoUserDAO) Create(user *User) (*User, error) {
 	} else {
 		return nil, fmt.Errorf("mpa/model: Unexpected id type: %T", info.UpsertedId)
 	}
+}
+
+func (dao *MongoUserDAO) Fill(user *User) error {
+	if user.Exact() {
+		return nil
+	}
+	mu := mongoUser{}
+	err := dao.Collection.Find(bson.M{
+		"_id": user.id,
+	}).One(&mu)
+	if err != nil {
+		return err
+	}
+	*user = mu.buildUser()
+	return nil
 }

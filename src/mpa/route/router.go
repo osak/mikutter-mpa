@@ -40,19 +40,25 @@ func (router *Router) registerHandler(path string) {
 func generateHandler(path string, router *Router) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, req *http.Request) {
 		ctx := NewContext(w, req)
+		var view View
 		var err error
 		switch req.Method {
 		case "GET":
 			if ctl, ok := router.getControllers[path]; ok {
-				err = ctl.ServeGet(ctx)
+				view, err = ctl.ServeGet(ctx)
 			}
 		case "POST":
 			if ctl, ok := router.postControllers[path]; ok {
-				err = ctl.ServePost(ctx)
+				view, err = ctl.ServePost(ctx)
 			}
 		}
 		if err != nil {
 			fmt.Printf("Error during request processing: %v\n", err.Error())
+			return
+		}
+		err = view.Render(ctx)
+		if err != nil {
+			fmt.Printf("Error during rendering: %v\n", err.Error())
 		}
 	}
 }
