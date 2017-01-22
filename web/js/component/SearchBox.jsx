@@ -1,12 +1,12 @@
 import React from 'react';
 
 export default class SearchBox extends React.Component {
-    constructor() {
+    constructor(props) {
         super();
         this.onTextboxChange = this.onTextboxChange.bind(this);
         this.onSearchButtonClick = this.onSearchButtonClick.bind(this);
         this.state = {
-            searchText: ''
+            searchText: props.searchText || ''
         };
     }
 
