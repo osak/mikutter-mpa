@@ -2,6 +2,7 @@ package plugin
 
 import (
 	"encoding/json"
+	"fmt"
 	"mpa/model"
 	"mpa/route"
 )
@@ -17,7 +18,8 @@ func (e *EntryView) Render(ctx *route.Context) error {
 		"name":        e.Plugin.Name,
 		"version":     e.Plugin.Version,
 		"description": e.Plugin.Description,
-		"url":         e.Plugin.Url,
+		"repoUrl":     e.Plugin.Url,
+		"url":         fmt.Sprintf("/plugin/%s.zip", e.Plugin.Slug),
 	})
 	return nil
 }
