@@ -7,3 +7,4 @@ src/golang.org
 src/gopkg.in
 mysql
 mongo
+storage

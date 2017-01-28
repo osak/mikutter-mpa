@@ -2,6 +2,8 @@ package plugin
 
 import (
 	"errors"
+	"fmt"
+	"github.com/satori/go.uuid"
 	"io"
 	"io/ioutil"
 	"mpa/filter"
@@ -9,8 +11,11 @@ import (
 	"mpa/route"
 	view "mpa/view/plugin"
 	"os"
+	"path/filepath"
 	"strings"
 )
+
+const StoragePath = "/app/storage"
 
 type PluginController struct {
 	PluginDAO model.PluginDAO
@@ -53,15 +58,22 @@ func (c *PluginController) ServePost(ctx *route.Context) (route.View, error) {
 			if err != nil {
 				return nil, err
 			}
+			defer os.Remove(f.Name())
 
 			spec, err := LoadSpec(f.Name())
 			if err != nil {
 				return nil, err
 			}
+			if _, err := c.PluginDAO.FindBySlug(spec.Slug); err == nil {
+				return nil, fmt.Errorf("The plugin of slug %s already exists.", spec.Slug)
+			}
+			uuid := uuid.NewV4()
 			plugin := model.Plugin{
 				Name:        spec.Name,
 				Version:     spec.Version,
 				Description: spec.Description,
+				Uuid:        uuid,
+				Slug:        spec.Slug,
 			}
 			token := filter.GetToken(ctx)
 			plugin.Author = token.User
@@ -69,6 +81,10 @@ func (c *PluginController) ServePost(ctx *route.Context) (route.View, error) {
 			if err != nil {
 				return nil, err
 			}
+			if err = os.Link(f.Name(), filepath.Join(StoragePath, uuid.String())); err != nil {
+				return nil, err
+			}
+
 			return &view.EntryView{
 				Plugin: plugin,
 			}, nil
@@ -78,7 +94,7 @@ func (c *PluginController) ServePost(ctx *route.Context) (route.View, error) {
 }
 
 func saveFile(data []byte) (*os.File, error) {
-	f, err := ioutil.TempFile("", "mpa-plugin")
+	f, err := ioutil.TempFile(StoragePath, "mpa-plugin-temp")
 	if err != nil {
 		return nil, err
 	}

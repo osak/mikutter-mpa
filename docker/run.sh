@@ -36,4 +36,8 @@ docker kill ${MPA_CONTAINER_NAME} || true
 docker rm ${MPA_CONTAINER_NAME} || true
 bin_dir="${base_dir}/bin"
 web_dir="${base_dir}/web-build"
-docker run -d -v "${bin_dir}:/app/bin" -v "${web_dir}:/app/web" -p 127.0.0.1:3939:8080 --network=${NETWORK_NAME} --name=${MPA_CONTAINER_NAME} ${MPA_IMAGE_NAME} ${mongo_ip}
+storage_dir="${base_dir}/storage"
+if [ ! -e ${storage_dir} ]; then
+    mkdir ${storage_dir}
+fi
+docker run -d -v "${bin_dir}:/app/bin" -v "${web_dir}:/app/web" -v "${storage_dir}:/app/storage" -p 127.0.0.1:3939:8080 --network=${NETWORK_NAME} --name=${MPA_CONTAINER_NAME} ${MPA_IMAGE_NAME} ${mongo_ip}

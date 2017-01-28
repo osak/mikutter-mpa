@@ -2,6 +2,7 @@ package model
 
 import (
 	"fmt"
+	"github.com/satori/go.uuid"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 )
@@ -12,12 +13,15 @@ type Plugin struct {
 	Version     string `json:"version"`
 	Description string `json:"description"`
 	Url         string `json:"url"`
+	Uuid        uuid.UUID
+	Slug        string
 
 	id    bson.ObjectId
 	exact bool
 }
 
 type PluginDAO interface {
+	FindBySlug(name string) (Plugin, error)
 	FindByName(name string) (Plugin, error)
 	FindByKeyword(keyword string) ([]Plugin, error)
 	Create(plugin *Plugin) error
@@ -34,6 +38,8 @@ type mongoPlugin struct {
 	Version     string
 	Description string
 	Url         string
+	Uuid        string
+	Slug        string
 }
 
 func (mp mongoPlugin) buildPlugin() Plugin {
@@ -43,6 +49,8 @@ func (mp mongoPlugin) buildPlugin() Plugin {
 		Version:     mp.Version,
 		Description: mp.Description,
 		Url:         mp.Url,
+		Uuid:        uuid.FromStringOrNil(mp.Uuid),
+		Slug:        mp.Slug,
 	}
 }
 
@@ -56,11 +64,24 @@ func (p Plugin) buildMongoPlugin() (mongoPlugin, error) {
 		Version:     p.Version,
 		Description: p.Description,
 		Url:         p.Url,
+		Uuid:        p.Uuid.String(),
+		Slug:        p.Slug,
 	}
 	if p.exact {
 		mp.Id = p.id
 	}
 	return mp, nil
+}
+
+func (dao *MongoPluginDAO) FindBySlug(slug string) (Plugin, error) {
+	mp := mongoPlugin{}
+	err := dao.Collection.Find(bson.M{
+		"slug": slug,
+	}).One(&mp)
+	if err != nil {
+		return Plugin{}, err
+	}
+	return mp.buildPlugin(), nil
 }
 
 func (dao *MongoPluginDAO) FindByName(name string) (Plugin, error) {
