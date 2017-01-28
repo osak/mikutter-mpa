@@ -53,6 +53,11 @@ func LoadSpec(path string) (Spec, error) {
 
 			s := Spec{}
 			err = yaml.Unmarshal(buf, &s)
+			if err == nil {
+				if s.Slug[0] == ':' {
+					s.Slug = s.Slug[1:len(s.Slug)]
+				}
+			}
 			return s, err
 		}
 	}

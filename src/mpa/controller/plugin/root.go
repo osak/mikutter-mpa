@@ -112,10 +112,10 @@ type PluginEntryController struct {
 // ServeGet implements GetController
 func (c *PluginEntryController) ServeGet(ctx *route.Context) (route.View, error) {
 	components := strings.SplitN(ctx.Request.URL.Path, "/", 4)
-	name := components[3]
+	slug := components[3]
 	ctx.ResponseWriter.Header().Set("Content-Type", "application/json")
 
-	plugin, err := c.PluginDAO.FindByName(name)
+	plugin, err := c.PluginDAO.FindBySlug(slug)
 	if err != nil {
 		return nil, err
 	}

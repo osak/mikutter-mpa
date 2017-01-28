@@ -19,7 +19,7 @@ func (v *SearchView) Render(ctx *route.Context) error {
 			"name":        p.Name,
 			"version":     p.Version,
 			"description": p.Description,
-			"url":         p.Url,
+			"slug":        p.Slug,
 		}
 	}
 	enc := json.NewEncoder(ctx.ResponseWriter)
