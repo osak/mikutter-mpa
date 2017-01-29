@@ -60,6 +60,7 @@ func main() {
 
 	pluginController := &plugin.PluginController{pluginDAO}
 	pluginEntryController := &plugin.PluginEntryController{pluginDAO, userDAO}
+	pluginDownloadController := &plugin.DownloadController{pluginDAO}
 	loginController := &auth.LoginController{}
 	loginCallbackController := &auth.LoginCallbackController{userDAO}
 	currentUserController := &user.CurrentUserController{}
@@ -68,6 +69,7 @@ func main() {
 	router.RegisterGet("/api/plugin/", pluginEntryController)
 	router.RegisterGet("/api/plugin", pluginController)
 	router.RegisterPost("/api/plugin", authFilterChain.WrapPost(pluginController))
+	router.RegisterGet("/api/plugin/archive/", pluginDownloadController)
 	router.RegisterGet("/api/me", authFilterChain.WrapGet(currentUserController))
 	router.RegisterGet("/api/auth/login", loginController)
 	router.RegisterGet("/api/auth/callback", loginCallbackController)

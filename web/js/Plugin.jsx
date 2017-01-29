@@ -35,7 +35,7 @@ export default class Plugin extends React.Component {
                     <div className="plugin__version">{this.state.spec.version}</div>
                     <div className="plugin__description">{this.state.spec.description}</div>
                     <div className="plugin__download">
-                        <span className="glyphicon glyphicon-download"></span><a href={`/plugin/${this.state.spec.slug}.zip`}>Download</a>
+                        <span className="glyphicon glyphicon-download"></span><a href={`/api/plugin/archive/${this.state.spec.slug}.zip`}>Download</a>
                     </div>
                     {this.repoLink()}
                 </section>
