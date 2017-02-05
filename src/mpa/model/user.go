@@ -28,6 +28,11 @@ func (u *User) Exact() bool {
 	return u.exact
 }
 
+// SameUser returns true iff u1 and u2 refers the same user.
+func SameUser(u1, u2 User) bool {
+	return u1.id == u2.id
+}
+
 type UserDAO interface {
 	FindByLogin(login string) (User, error)
 	Create(user *User) (*User, error)

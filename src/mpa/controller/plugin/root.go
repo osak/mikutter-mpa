@@ -64,8 +64,14 @@ func (c *PluginController) ServePost(ctx *route.Context) (route.View, error) {
 			if err != nil {
 				return nil, err
 			}
-			if _, err := c.PluginDAO.FindBySlug(spec.Slug); err == nil {
-				return nil, fmt.Errorf("The plugin of slug %s already exists.", spec.Slug)
+			token := filter.GetToken(ctx)
+			if p, err := c.PluginDAO.FindBySlug(spec.Slug); err == nil {
+				if !model.SameUser(p.Author, token.User) {
+					return nil, fmt.Errorf("Plugin already exists but is owned by other user %s", p.Author.Login)
+				}
+			}
+			if _, err := c.PluginDAO.FindBySlugAndVersion(spec.Slug, spec.Version); err == nil {
+				return nil, fmt.Errorf("Plugin of the same version and slug already exists")
 			}
 			uuid := uuid.NewV4()
 			plugin := model.Plugin{
@@ -75,7 +81,6 @@ func (c *PluginController) ServePost(ctx *route.Context) (route.View, error) {
 				Uuid:        uuid,
 				Slug:        spec.Slug,
 			}
-			token := filter.GetToken(ctx)
 			plugin.Author = token.User
 			err = c.PluginDAO.Create(&plugin)
 			if err != nil {

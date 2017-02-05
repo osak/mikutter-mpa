@@ -22,6 +22,7 @@ type Plugin struct {
 
 type PluginDAO interface {
 	FindBySlug(name string) (Plugin, error)
+	FindBySlugAndVersion(name, version string) (Plugin, error)
 	FindByName(name string) (Plugin, error)
 	FindByKeyword(keyword string) ([]Plugin, error)
 	Create(plugin *Plugin) error
@@ -73,10 +74,24 @@ func (p Plugin) buildMongoPlugin() (mongoPlugin, error) {
 	return mp, nil
 }
 
+// FindBySlug returns the latest version of the plugin that has specified slug.
 func (dao *MongoPluginDAO) FindBySlug(slug string) (Plugin, error) {
 	mp := mongoPlugin{}
 	err := dao.Collection.Find(bson.M{
 		"slug": slug,
+	}).Sort("-version").One(&mp)
+	if err != nil {
+		return Plugin{}, err
+	}
+	return mp.buildPlugin(), nil
+}
+
+// FindBySlugAndVersion returns a plugin that has specified slug and version.
+func (dao *MongoPluginDAO) FindBySlugAndVersion(slug, version string) (Plugin, error) {
+	mp := mongoPlugin{}
+	err := dao.Collection.Find(bson.M{
+		"slug":    slug,
+		"version": version,
 	}).One(&mp)
 	if err != nil {
 		return Plugin{}, err
