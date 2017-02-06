@@ -1,3 +1,8 @@
+let ajaxHooks = [];
+function registerAjaxHook(func) {
+    ajaxHooks.push(func);
+}
+
 function ajax(url, method, params, headers, callback) {
     let xhr = new XMLHttpRequest();
     xhr.onreadystatechange = () => {
@@ -7,18 +12,21 @@ function ajax(url, method, params, headers, callback) {
         if (xhr.readyState == 4) {
             callback(xhr.response);
         }
-    }
+    };
     xhr.open(method, url, true);
     for (let [key, val] of headers) {
         xhr.setRequestHeader(key, val);
     }
     if (method == 'GET') {
         xhr.send('');
+        ajaxHooks.forEach((f) => f(url, 'GET'));
     } else if (method == 'POST') {
         if (params instanceof FormData) {
             xhr.send(params);
+            ajaxHooks.forEach((f) => f(url, 'POST', '(form-data)'));
         } else {
             xhr.send(JSON.stringify(params));
+            ajaxHooks.forEach((f) => f(url, 'POST', params));
         }
     }
 }
@@ -61,5 +69,4 @@ function post(url, payload, headers) {
     });
 }
 
-
-export {get, post};
+export {registerAjaxHook, get, post};
