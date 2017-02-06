@@ -12,8 +12,9 @@ var (
 )
 
 type User struct {
-	Login string `bson:"login" json:"login"`
-	Name  string `bson:"name" json:"name"`
+	Login      string `bson:"login" json:"login"`
+	Name       string `bson:"name" json:"name"`
+	LoginToken string
 
 	id    bson.ObjectId
 	exact bool
@@ -44,18 +45,32 @@ type MongoUserDAO struct {
 }
 
 type mongoUser struct {
-	Id    bson.ObjectId `bson:"_id"`
-	Login string
-	Name  string
+	Id         bson.ObjectId `bson:"_id"`
+	Login      string
+	Name       string
+	LoginToken string
 }
 
 func (mu mongoUser) buildUser() User {
 	return User{
-		Login: mu.Login,
-		Name:  mu.Name,
-		id:    mu.Id,
-		exact: true,
+		Login:      mu.Login,
+		Name:       mu.Name,
+		LoginToken: mu.LoginToken,
+		id:         mu.Id,
+		exact:      true,
 	}
+}
+
+func (u User) buildMongoUser() mongoUser {
+	mu := mongoUser{
+		Login:      u.Login,
+		Name:       u.Name,
+		LoginToken: u.LoginToken,
+	}
+	if u.Exact() {
+		mu.Id = u.id
+	}
+	return mu
 }
 
 func userFromMongoId(id bson.ObjectId) User {
@@ -87,7 +102,8 @@ func (dao *MongoUserDAO) Create(user *User) (*User, error) {
 		}
 	}
 
-	info, err := dao.Collection.Upsert(bson.M{"login": user.Login}, &user)
+	mu := user.buildMongoUser()
+	info, err := dao.Collection.Upsert(bson.M{"login": user.Login}, &mu)
 	if err != nil {
 		return user, err
 	}

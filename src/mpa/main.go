@@ -64,6 +64,7 @@ func main() {
 	loginController := &auth.LoginController{}
 	loginCallbackController := &auth.LoginCallbackController{userDAO}
 	currentUserController := &user.CurrentUserController{}
+	userController := &user.UserController{userDAO}
 
 	authFilterChain := route.CreateFilterChain(&filter.LoginFilter{tokenDecoder, []byte{1, 2, 3, 4}})
 	router.RegisterGet("/api/plugin/", pluginEntryController)
@@ -73,6 +74,7 @@ func main() {
 	router.RegisterGet("/api/me", authFilterChain.WrapGet(currentUserController))
 	router.RegisterGet("/api/auth/login", loginController)
 	router.RegisterGet("/api/auth/callback", loginCallbackController)
+	router.RegisterGet("/api/user/", authFilterChain.WrapGet(userController))
 	http.HandleFunc("/static/", staticFileHandler)
 	http.HandleFunc("/", mainPageHandler)
 	http.ListenAndServe(":8080", nil)

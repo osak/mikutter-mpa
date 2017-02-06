@@ -37,3 +37,4 @@ class Endpoint {
 
 export const Me = new Endpoint('/me', true);
 export const Plugin = new Endpoint('/plugin', true);
+export const User = new Endpoint('/user', true);

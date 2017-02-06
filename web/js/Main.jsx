@@ -7,6 +7,7 @@ import Navbar from './Navbar.jsx';
 import Plugin from './Plugin.jsx';
 import Search from './Search.jsx';
 import RegisterPlugin from './RegisterPlugin.jsx';
+import User from './User.jsx';
 import ApiHistory from './component/ApiHistory.jsx';
 import {registerAjaxHook} from './Ajax.jsx';
 
@@ -50,6 +51,7 @@ function render() {
                 <Route path="/plugin" component={Search} />
                 <Route path="/plugin/add" component={RegisterPlugin} />
                 <Route path="/plugin/:name" component={Plugin} />
+                <Route path="/user/:id" component={User} />
             </Route>
         </Router>
     ), document.getElementById('main'));
