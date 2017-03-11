@@ -49,3 +49,9 @@
 .search .search__result__description {
     color: gray;
 }
+
+.apihistory {
+    border: 1px black dashed;
+    height: 4em;
+    margin-bottom: 20px;
+}

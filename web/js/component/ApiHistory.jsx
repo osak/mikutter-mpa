@@ -7,7 +7,7 @@ export default class ApiHistory extends React.Component {
 
     render() {
         return (
-            <div>
+            <div className="apihistory">
                 <p>API calls issued to render this page:</p>
                 {this.apiCallList()}
             </div>
@@ -26,7 +26,7 @@ export default class ApiHistory extends React.Component {
             );
         });
         return (
-            <ul className="apihistory">
+            <ul className="apihistory__list">
                 {lis}
             </ul>
         );
