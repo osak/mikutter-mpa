@@ -7,6 +7,7 @@ export default class Plugin extends React.Component {
         this.onTextboxClick = this.onTextboxClick.bind(this);
         this.state = {
             spec: {
+                author: null,
                 name: null,
                 url: null,
                 repoUrl: null,
@@ -33,6 +34,7 @@ export default class Plugin extends React.Component {
                 <section className="plugin">
                     <h1 className="plugin__name">{this.state.spec.name}</h1>
                     <div className="plugin__version">{this.state.spec.version}</div>
+                    <div className="plugin__author"><span className="glyphicon glyphicon-user"></span>{this.state.spec.author}</div>
                     <div className="plugin__description">{this.state.spec.description}</div>
                     <div className="plugin__download">
                         <span className="glyphicon glyphicon-download"></span><a href={`/api/plugin/archive/${this.state.spec.slug}.zip`}>Download</a>

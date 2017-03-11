@@ -11,6 +11,12 @@
     margin-left: 1em;
 }
 
+.plugin .plugin__author {
+    font-style: italic;
+    display: inline-block;
+    margin-left: 1em;
+}
+
 .plugin .plugin__description {
     font-style: italic;
 }
