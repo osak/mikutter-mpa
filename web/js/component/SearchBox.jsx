@@ -4,7 +4,7 @@ export default class SearchBox extends React.Component {
     constructor(props) {
         super();
         this.onTextboxChange = this.onTextboxChange.bind(this);
-        this.onSearchButtonClick = this.onSearchButtonClick.bind(this);
+        this.handleSubmit = this.handleSubmit.bind(this);
         this.state = {
             searchText: props.searchText || ''
         };
@@ -16,19 +16,19 @@ export default class SearchBox extends React.Component {
         });
     }
 
-    onSearchButtonClick(e) {
+    handleSubmit(e) {
         this.props.onSubmit(this.state.searchText);
     }
 
     render() {
         let placeholder = this.props.placeholder || 'Enter search query';
         return (
-            <div className="form-inline">
+            <form className="form-inline" onSubmit={this.handleSubmit}>
                 <div className="form-group">
                     <input type="text" className="form-control" placeholder={this.props.placeholder} value={this.state.searchText} onChange={this.onTextboxChange} />
-                    <button className="btn btn-primary" onClick={this.onSearchButtonClick}>Search</button>
+                    <button className="btn btn-primary">Search</button>
                 </div>
-            </div>
+            </form>
         );
     }
 }

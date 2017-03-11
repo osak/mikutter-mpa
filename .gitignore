@@ -8,3 +8,4 @@ src/gopkg.in
 mysql
 mongo
 storage
+.idea
