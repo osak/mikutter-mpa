@@ -15,8 +15,8 @@ import (
 )
 
 var conf *oauth2.Config = &oauth2.Config{
-	ClientID:     "80cfe9da0569d8ebf716",
-	ClientSecret: "2aa53efd7b99c05055578f51c056dcbce1e53a81",
+	ClientID:     os.Getenv("GITHUB_CLIENT_ID"),
+	ClientSecret: os.Getenv("GITHUB_CLIENT_SECRET"),
 	Endpoint:     github.Endpoint,
 }
 

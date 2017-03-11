@@ -6,6 +6,9 @@ MPA_CONTAINER_NAME=mpa
 MONGO_IMAGE_NAME=mongo:3.4
 MONGO_CONTAINER_NAME=mpa-mongo
 
+# Load environment-dependent configurations
+source "$1"
+
 script_dir_rel=$(dirname $0)
 base_dir=$(cd "${script_dir_rel}/.."; pwd)
 
@@ -40,4 +43,14 @@ storage_dir="${base_dir}/storage"
 if [ ! -e ${storage_dir} ]; then
     mkdir ${storage_dir}
 fi
-docker run -d -v "${bin_dir}:/app/bin" -v "${web_dir}:/app/web" -v "${storage_dir}:/app/storage" -p 127.0.0.1:3939:8080 --network=${NETWORK_NAME} --name=${MPA_CONTAINER_NAME} ${MPA_IMAGE_NAME} ${mongo_ip}
+
+docker run -d \
+    -v "${bin_dir}:/app/bin" \
+    -v "${web_dir}:/app/web" \
+    -v "${storage_dir}:/app/storage" \
+    -p 127.0.0.1:3939:8080 \
+    --network=${NETWORK_NAME} \
+    --name=${MPA_CONTAINER_NAME} \
+    -e "GITHUB_CLIENT_ID=${GITHUB_CLIENT_ID}" \
+    -e "GITHUB_CLIENT_SECRET=${GITHUB_CLIENT_SECRET}" \
+    ${MPA_IMAGE_NAME} ${mongo_ip}
