@@ -45,7 +45,7 @@ type MongoUserDAO struct {
 }
 
 type mongoUser struct {
-	Id         bson.ObjectId `bson:"_id"`
+	Id         bson.ObjectId `bson:"_id,omitempty"`
 	Login      string
 	Name       string
 	LoginToken string

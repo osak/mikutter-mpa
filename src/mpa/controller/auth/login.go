@@ -102,7 +102,7 @@ func findOrCreateAuthenticatedUser(client *http.Client, userDAO model.UserDAO) (
 		}
 		_, err = userDAO.Create(&usr)
 		if err != nil {
-			return model.User{}, nil
+			return model.User{}, err
 		}
 		return usr, nil
 	}
