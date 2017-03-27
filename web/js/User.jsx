@@ -2,17 +2,26 @@ import React from 'react';
 import * as Api from './Api.js';
 
 export default class User extends React.Component {
-    constructor() {
-        super();
+    constructor(props) {
+        super(props);
         this.state = {
             user: null
         };
     }
 
     async componentDidMount() {
-        const userId = this.props.params.id;
-        const user = await Api.User.individual(userId).get();
-        this.setState({user});
+        if (this.renderingMe()) {
+            const user = await Api.Me.get();
+            this.setState({user});
+        } else {
+            const userId = this.props.match.params.id;
+            const user = await Api.User.individual(userId).get();
+            this.setState({user});
+        }
+    }
+
+    renderingMe() {
+        return this.props.match.path === '/me';
     }
 
     render() {
@@ -20,7 +29,7 @@ export default class User extends React.Component {
             return null;
         }
         return (
-            <table>
+            <table className="user">
                 <tbody>
                 <tr>
                     <th>ID</th>
@@ -30,23 +39,20 @@ export default class User extends React.Component {
                     <th>Name</th>
                     <td>{this.state.user.name}</td>
                 </tr>
-                {this.loginToken()}
+                {this.renderingMe() ? this.loginToken() : null}
                 </tbody>
             </table>
         )
     }
 
     loginToken() {
-        const token = this.state.user.loginToken;
-        if (token !== undefined) {
-            return (
-                <tr>
-                    <th>Token</th>
-                    <td><code>{token}</code></td>
-                </tr>
-            );
-        } else {
-            return null;
-        }
+        return (
+            <tr>
+                <th>Token</th>
+                <td className="form-group">
+                    <input type="text" value={localStorage.getItem('AUTH_TOKEN')} className="form-control user__login-token" onClick={(e) => e.target.select()} readOnly />
+                </td>
+            </tr>
+        );
     }
 }
