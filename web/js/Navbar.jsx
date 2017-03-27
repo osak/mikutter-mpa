@@ -1,5 +1,5 @@
 import React from 'react';
-import {Link} from 'react-router';
+import {Link} from 'react-router-dom';
 import * as Api from './Api.js';
 
 export default class Navbar extends React.Component {
@@ -44,7 +44,7 @@ export default class Navbar extends React.Component {
     }
     currentUser() {
         if (this.state.user) {
-            return (<Link to="#">{this.state.user.login}</Link>);
+            return (<Link to="/me">{this.state.user.login}</Link>);
         } else {
             return (<a href="/api/auth/login">Login</a>);
         }

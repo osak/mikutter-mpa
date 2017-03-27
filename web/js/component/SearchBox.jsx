@@ -17,6 +17,7 @@ export default class SearchBox extends React.Component {
     }
 
     handleSubmit(e) {
+        e.preventDefault();
         this.props.onSubmit(this.state.searchText);
     }
 

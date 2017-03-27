@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import {Router, Route, IndexRoute, browserHistory} from 'react-router';
+import {BrowserRouter, Route} from 'react-router-dom';
 
 import Top from './Top.jsx';
 import Navbar from './Navbar.jsx';
@@ -36,7 +36,12 @@ class Main extends React.Component {
                 </header>
                 <div className="container">
                     <ApiHistory apiCalls={this.state.apiCalls} />
-                    {this.props.children}
+                    <Route exact path="/" component={Top} />
+                    <Route path="/plugin" component={Search} />
+                    <Route path="/plugin/add" component={RegisterPlugin} />
+                    <Route path="/plugin/:name" component={Plugin} />
+                    <Route path="/user/:id" component={User} />
+                    <Route path="/me" component={User} />
                 </div>
             </div>
         );
@@ -45,15 +50,9 @@ class Main extends React.Component {
 
 function render() {
     ReactDOM.render((
-        <Router history={browserHistory}>
-            <Route path="/" component={Main}>
-                <IndexRoute component={Top} />
-                <Route path="/plugin" component={Search} />
-                <Route path="/plugin/add" component={RegisterPlugin} />
-                <Route path="/plugin/:name" component={Plugin} />
-                <Route path="/user/:id" component={User} />
-            </Route>
-        </Router>
+        <BrowserRouter>
+            <Route path="/" component={Main} />
+        </BrowserRouter>
     ), document.getElementById('main'));
 }
 

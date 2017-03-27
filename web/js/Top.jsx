@@ -1,10 +1,10 @@
 import React from 'react';
 import SearchBox from './component/SearchBox.jsx';
 
-const Top = ({router}) => {
+const Top = ({history}) => {
     let searchFunc = (query) => {
         let name = query;
-        router.push(`/plugin?filter=${name}`);
+        history.push(`/plugin?filter=${name}`);
     };
     return (
         <div className="jumbotron">

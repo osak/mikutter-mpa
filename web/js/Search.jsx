@@ -1,11 +1,12 @@
 import React from 'react';
-import {Link} from 'react-router';
+import {Link} from 'react-router-dom';
 import SearchBox from './component/SearchBox.jsx';
 import * as Api from './Api.js';
+import ParseLocation from './hoc/ParseLocation.jsx';
 
-export default class Search extends React.Component {
-    constructor() {
-        super();
+class Search extends React.Component {
+    constructor(props) {
+        super(props);
         this.state = {
             searchResult: []
         }
@@ -34,7 +35,7 @@ export default class Search extends React.Component {
     render() {
         console.log(this.state);
         let searchFunc = (query) => {
-            this.props.router.push(`/plugin?filter=${query}`);
+            this.props.history.push(`/plugin?filter=${query}`);
         };
 
         let results = this.state.searchResult.map((spec) => {
@@ -59,4 +60,7 @@ export default class Search extends React.Component {
 }
 
 Search.properties = {
-}
+};
+
+export default ParseLocation(Search);
+
