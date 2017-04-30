@@ -21,7 +21,7 @@ export default class Plugin extends React.Component {
     }
 
     async componentDidMount() {
-        let pluginName = this.props.params.name;
+        let pluginName = this.props.match.params.name;
         let spec = await Api.Plugin.individual(pluginName).get();
         this.setState({
             spec: spec
@@ -67,7 +67,10 @@ export default class Plugin extends React.Component {
 }
 
 Plugin.properties = {
-    params: React.PropTypes.shape({
-        name: React.PropTypes.string.isRequired
+    match: React.PropTypes.shape({
+        params: React.PropTypes.shape({
+            name: React.PropTypes.string.isRequired
+        }).isRequired
     }).isRequired
-}
+};
+
