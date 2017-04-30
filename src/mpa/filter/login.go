@@ -13,7 +13,7 @@ var (
 )
 
 type LoginFilter struct {
-	TokenDecoder *model.TokenDecoder
+	Authenticator *model.Authenticator
 	Secret       []byte
 }
 
@@ -30,7 +30,7 @@ func (f *LoginFilter) PreHandle(ctx *route.Context) error {
 		ctx.ResponseWriter.WriteHeader(http.StatusBadRequest)
 		return ErrUnauthenticated
 	}
-	token, err := f.TokenDecoder.Decode(f.Secret, tokenString)
+	authResult, err := f.Authenticator.Authenticate(f.Secret, tokenString)
 	if err == model.ErrTokenExpired {
 		ctx.ResponseWriter.Header().Set("WWW-Authenticate", `Bearer realm="Login required"`)
 		ctx.ResponseWriter.WriteHeader(http.StatusUnauthorized)
@@ -39,7 +39,7 @@ func (f *LoginFilter) PreHandle(ctx *route.Context) error {
 		ctx.ResponseWriter.WriteHeader(http.StatusBadRequest)
 		return ErrUnauthenticated
 	}
-	registerToken(ctx, &token)
+	registerAuthResult(ctx, &authResult)
 	return nil
 }
 
@@ -54,15 +54,15 @@ func parseAuth(str string) (scheme, token string) {
 	return
 }
 
-const tokenAttributeName = "auth/token"
+const tokenAttributeName = "auth/result"
 
-func registerToken(ctx *route.Context, token *model.Token) {
+func registerAuthResult(ctx *route.Context, token *model.AuthResult) {
 	ctx.PutAttribute(tokenAttributeName, token)
 }
 
-func GetToken(ctx *route.Context) *model.Token {
+func GetAuthResult(ctx *route.Context) *model.AuthResult {
 	obj := ctx.GetAttribute(tokenAttributeName)
-	if token, ok := obj.(*model.Token); ok {
+	if token, ok := obj.(*model.AuthResult); ok {
 		return token
 	} else {
 		return nil

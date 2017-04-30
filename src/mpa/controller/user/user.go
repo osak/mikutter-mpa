@@ -21,8 +21,8 @@ func (c *UserController) ServeGet(ctx *route.Context) (route.View, error) {
 	if err != nil {
 		return nil, err
 	}
-	token := filter.GetToken(ctx)
-	if model.SameUser(user, token.User) {
+	authResult := filter.GetAuthResult(ctx)
+	if model.SameUser(user, authResult.User) {
 		return &view.LoginUserView{
 			User: user,
 		}, nil

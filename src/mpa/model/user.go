@@ -36,6 +36,7 @@ func SameUser(u1, u2 User) bool {
 
 type UserDAO interface {
 	FindByLogin(login string) (User, error)
+	FindByLoginToken(token string) (User, error)
 	Create(user *User) (*User, error)
 	Fill(user *User) error
 }
@@ -83,6 +84,20 @@ func (dao *MongoUserDAO) FindByLogin(login string) (User, error) {
 	mu := mongoUser{}
 	err := dao.Collection.Find(bson.M{
 		"login": login,
+	}).One(&mu)
+	switch {
+	case err == mgo.ErrNotFound:
+		return User{}, ErrNoEntry
+	case err != nil:
+		return User{}, err
+	}
+	return mu.buildUser(), nil
+}
+
+func (dao *MongoUserDAO) FindByLoginToken(token string) (User, error) {
+	mu := mongoUser{}
+	err := dao.Collection.Find(bson.M{
+		"logintoken": token,
 	}).One(&mu)
 	switch {
 	case err == mgo.ErrNotFound:

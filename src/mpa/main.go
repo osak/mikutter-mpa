@@ -56,7 +56,7 @@ func main() {
 	db := session.DB("mpa")
 	pluginDAO := &model.MongoPluginDAO{db.C("plugins")}
 	userDAO := &model.MongoUserDAO{db.C("users")}
-	tokenDecoder := &model.TokenDecoder{userDAO}
+	tokenDecoder := &model.Authenticator{userDAO}
 
 	pluginController := &plugin.PluginController{pluginDAO}
 	pluginEntryController := &plugin.PluginEntryController{pluginDAO, userDAO}

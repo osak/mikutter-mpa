@@ -19,6 +19,7 @@ var conf *oauth2.Config = &oauth2.Config{
 	ClientSecret: os.Getenv("GITHUB_CLIENT_SECRET"),
 	Endpoint:     github.Endpoint,
 }
+var tokenSecret []byte = []byte(os.Getenv("TOKEN_SECRET"))
 
 type LoginController struct{}
 
@@ -59,16 +60,9 @@ func (controller *LoginCallbackController) ServeGet(ctx *route.Context) (route.V
 		return nil, model.ErrInvalidToken
 	}
 
-	tokenString, err := model.CreateTokenString(user, []byte{1, 2, 3, 4})
-	if err != nil {
-		ctx.ResponseWriter.WriteHeader(http.StatusInternalServerError)
-		fmt.Fprintf(ctx.ResponseWriter, "JWT encode failure: %s", err)
-		return nil, model.ErrInvalidToken
-	}
-
 	authCookie := &http.Cookie{
 		Name:  "AUTH_TOKEN",
-		Value: tokenString,
+		Value: user.LoginToken,
 		Path:  "/",
 	}
 	http.SetCookie(ctx.ResponseWriter, authCookie)
@@ -100,6 +94,12 @@ func findOrCreateAuthenticatedUser(client *http.Client, userDAO model.UserDAO) (
 			Login: githubUser.Login,
 			Name:  githubUser.Name,
 		}
+		tokenString, err := model.CreateTokenString(usr, tokenSecret)
+		if err != nil {
+			return model.User{}, err
+		}
+		usr.LoginToken = tokenString
+
 		_, err = userDAO.Create(&usr)
 		if err != nil {
 			return model.User{}, err
