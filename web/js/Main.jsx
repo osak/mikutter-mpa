@@ -37,9 +37,9 @@ class Main extends React.Component {
                 <div className="container">
                     <ApiHistory apiCalls={this.state.apiCalls} />
                     <Route exact path="/" component={Top} />
-                    <Route path="/plugin" component={Search} />
-                    <Route path="/plugin/add" component={RegisterPlugin} />
-                    <Route path="/plugin/:name" component={Plugin} />
+                    <Route path="/plugin" component={Search} exact={true} />
+                    <Route path="/plugin/add" component={RegisterPlugin} exact={true} />
+                    <Route path="/plugin/show/:name" component={Plugin} />
                     <Route path="/user/:id" component={User} />
                     <Route path="/me" component={User} />
                 </div>

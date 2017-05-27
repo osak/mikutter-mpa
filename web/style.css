@@ -58,7 +58,8 @@
 
 .apihistory {
     border: 1px black dashed;
-    height: 4em;
+    max-height: 4em;
+    overflow-y: scroll;
     margin-bottom: 20px;
 }
 

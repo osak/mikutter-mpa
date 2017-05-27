@@ -32,10 +32,6 @@ export default class User extends React.Component {
             <table className="user">
                 <tbody>
                 <tr>
-                    <th>ID</th>
-                    <td>{this.state.user.id}</td>
-                </tr>
-                <tr>
                     <th>Name</th>
                     <td>{this.state.user.name}</td>
                 </tr>
