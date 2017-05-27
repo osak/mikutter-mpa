@@ -1,11 +1,12 @@
-import React from 'react';
-import * as Api from './Api.js';
+import React from "react";
+import * as Api from "./Api.js";
 
 export default class User extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            user: null
+            user: null,
+            reset: false
         };
     }
 
@@ -20,6 +21,13 @@ export default class User extends React.Component {
         }
     }
 
+    async _resetToken() {
+        await Api.Token.delete();
+        this.setState({
+            reset: true
+        });
+    }
+
     renderingMe() {
         return this.props.match.path === '/me';
     }
@@ -29,15 +37,18 @@ export default class User extends React.Component {
             return null;
         }
         return (
-            <table className="user">
-                <tbody>
-                <tr>
-                    <th>Name</th>
-                    <td>{this.state.user.name}</td>
-                </tr>
-                {this.renderingMe() ? this.loginToken() : null}
-                </tbody>
-            </table>
+            <div>
+                {this.state.reset ? <div className="alert alert-success" role="alert">Your token is successfully reset. <a href="/api/auth/login">Login again.</a></div>: null}
+                <table className="user">
+                    <tbody>
+                    <tr>
+                        <th>Name</th>
+                        <td>{this.state.user.name}</td>
+                    </tr>
+                    {this.renderingMe() ? this.loginToken() : null}
+                    </tbody>
+                </table>
+            </div>
         )
     }
 
@@ -45,8 +56,10 @@ export default class User extends React.Component {
         return (
             <tr>
                 <th>Token</th>
-                <td className="form-group">
-                    <input type="text" value={localStorage.getItem('AUTH_TOKEN')} className="form-control user__login-token" onClick={(e) => e.target.select()} readOnly />
+                <td className="form-group user__login-token">
+                    <input type="text" value={localStorage.getItem('AUTH_TOKEN')}
+                           className="form-control user__login-token-input" onClick={(e) => e.target.select()} readOnly/>
+                    <button className="btn btn-inline btn-danger" onClick={this._resetToken.bind(this)}>Reset token</button>
                 </td>
             </tr>
         );

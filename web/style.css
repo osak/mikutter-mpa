@@ -64,5 +64,9 @@
 }
 
 .user .user__login-token {
+    display: flex;
+}
+
+.user .user__login-token-input {
     background-color: white;
 }

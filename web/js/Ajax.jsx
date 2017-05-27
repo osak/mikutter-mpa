@@ -28,6 +28,9 @@ function ajax(url, method, params, headers, callback) {
             xhr.send(JSON.stringify(params));
             ajaxHooks.forEach((f) => f(url, 'POST', params));
         }
+    } else if (method == 'DELETE') {
+        xhr.send('');
+        ajaxHooks.forEach((f) => f(url, 'DELETE', params));
     }
 }
 
@@ -69,4 +72,21 @@ function post(url, payload, headers) {
     });
 }
 
-export {registerAjaxHook, get, post};
+function delete_(url, payload, headers) {
+     return new Promise((resolve, reject) => {
+        ajax(url, 'DELETE', payload, headers,  (response) => {
+            try {
+                resolve(JSON.parse(response));
+            } catch (e) {
+                reject(e);
+            }
+        });
+    });
+}
+
+export {
+    registerAjaxHook,
+    get,
+    post,
+    delete_ as delete
+};

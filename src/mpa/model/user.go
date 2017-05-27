@@ -37,6 +37,8 @@ func SameUser(u1, u2 User) bool {
 type UserDAO interface {
 	FindByLogin(login string) (User, error)
 	FindByLoginToken(token string) (User, error)
+	DeleteLoginToken(user User) error
+	UpdateLoginToken(user User) error
 	Create(user *User) (*User, error)
 	Fill(user *User) error
 }
@@ -106,6 +108,14 @@ func (dao *MongoUserDAO) FindByLoginToken(token string) (User, error) {
 		return User{}, err
 	}
 	return mu.buildUser(), nil
+}
+
+func (dao *MongoUserDAO) DeleteLoginToken(user User) error {
+	return dao.Collection.UpdateId(user.id, bson.M{"$unset": bson.M{"logintoken": 1}})
+}
+
+func (dao *MongoUserDAO) UpdateLoginToken(user User) error {
+	return dao.Collection.UpdateId(user.id, bson.M{"$set": bson.M{"logintoken": user.LoginToken}})
 }
 
 func (dao *MongoUserDAO) Create(user *User) (*User, error) {

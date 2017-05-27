@@ -6,16 +6,18 @@ import (
 )
 
 type Router struct {
-	getControllers  map[string]GetController
-	postControllers map[string]PostController
-	handlerFuncs    map[string]func(http.ResponseWriter, *http.Request)
+	getControllers    map[string]GetController
+	postControllers   map[string]PostController
+	deleteControllers map[string]DeleteController
+	handlerFuncs      map[string]func(http.ResponseWriter, *http.Request)
 }
 
 func NewRouter() *Router {
 	return &Router{
-		getControllers:  make(map[string]GetController),
-		postControllers: make(map[string]PostController),
-		handlerFuncs:    make(map[string]func(http.ResponseWriter, *http.Request)),
+		getControllers:    make(map[string]GetController),
+		postControllers:   make(map[string]PostController),
+		deleteControllers: make(map[string]DeleteController),
+		handlerFuncs:      make(map[string]func(http.ResponseWriter, *http.Request)),
 	}
 }
 
@@ -26,6 +28,11 @@ func (router *Router) RegisterGet(path string, controller GetController) {
 
 func (router *Router) RegisterPost(path string, controller PostController) {
 	router.postControllers[path] = controller
+	router.registerHandler(path)
+}
+
+func (router *Router) RegisterDelete(path string, controller DeleteController) {
+	router.deleteControllers[path] = controller
 	router.registerHandler(path)
 }
 
@@ -50,6 +57,10 @@ func generateHandler(path string, router *Router) func(http.ResponseWriter, *htt
 		case "POST":
 			if ctl, ok := router.postControllers[path]; ok {
 				view, err = ctl.ServePost(ctx)
+			}
+		case "DELETE":
+			if ctl, ok := router.deleteControllers[path]; ok {
+				view, err = ctl.ServeDelete(ctx)
 			}
 		}
 		if err != nil {

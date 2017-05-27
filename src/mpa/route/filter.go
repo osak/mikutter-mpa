@@ -28,6 +28,13 @@ func (fc *FilterChain) WrapPost(controller PostController) PostController {
 	}
 }
 
+func (fc *FilterChain) WrapDelete(controller DeleteController) DeleteController {
+	return &internalDeleteHandler{
+		filterChain: fc,
+		controller:  controller,
+	}
+}
+
 type internalGetHandler struct {
 	filterChain *FilterChain
 	controller  GetController
@@ -36,6 +43,11 @@ type internalGetHandler struct {
 type internalPostHandler struct {
 	filterChain *FilterChain
 	controller  PostController
+}
+
+type internalDeleteHandler struct {
+	filterChain *FilterChain
+	controller  DeleteController
 }
 
 // ServeGet implements GetController
@@ -49,6 +61,12 @@ func (handler *internalGetHandler) ServeGet(ctx *Context) (View, error) {
 func (handler *internalPostHandler) ServePost(ctx *Context) (View, error) {
 	return processFilter(handler.filterChain, ctx, func(ctx *Context) (View, error) {
 		return handler.controller.ServePost(ctx)
+	})
+}
+
+func (handler *internalDeleteHandler) ServeDelete(ctx *Context) (View, error) {
+	return processFilter(handler.filterChain, ctx, func(ctx *Context) (View, error) {
+		return handler.controller.ServeDelete(ctx)
 	})
 }
 

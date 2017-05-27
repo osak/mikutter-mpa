@@ -106,5 +106,13 @@ func findOrCreateAuthenticatedUser(client *http.Client, userDAO model.UserDAO) (
 		}
 		return usr, nil
 	}
+	if usr.LoginToken == "" {
+		tokenString, err := model.CreateTokenString(usr, tokenSecret)
+		if err != nil {
+			return model.User{}, err
+		}
+		usr.LoginToken = tokenString
+		userDAO.UpdateLoginToken(usr)
+	}
 	return usr, err
 }

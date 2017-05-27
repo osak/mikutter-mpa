@@ -65,6 +65,7 @@ func main() {
 	loginCallbackController := &auth.LoginCallbackController{userDAO}
 	currentUserController := &user.CurrentUserController{}
 	userController := &user.UserController{userDAO}
+	deleteTokenController := &user.TokenController{userDAO}
 
 	authFilterChain := route.CreateFilterChain(&filter.LoginFilter{tokenDecoder, []byte{1, 2, 3, 4}})
 	router.RegisterGet("/api/plugin/", pluginEntryController)
@@ -72,6 +73,7 @@ func main() {
 	router.RegisterPost("/api/plugin", authFilterChain.WrapPost(pluginController))
 	router.RegisterGet("/api/plugin/archive/", pluginDownloadController)
 	router.RegisterGet("/api/me", authFilterChain.WrapGet(currentUserController))
+	router.RegisterDelete("/api/me/token", authFilterChain.WrapDelete(deleteTokenController))
 	router.RegisterGet("/api/auth/login", loginController)
 	router.RegisterGet("/api/auth/callback", loginCallbackController)
 	router.RegisterGet("/api/user/", authFilterChain.WrapGet(userController))

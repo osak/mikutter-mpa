@@ -1,4 +1,4 @@
-import {get, post} from './Ajax.jsx';
+import {get, post, delete as delete_} from './Ajax.jsx';
 
 const BASE_PATH = '/api';
 
@@ -26,6 +26,11 @@ class Endpoint {
         return post(this.fullUri(), payload, headers);
     }
 
+    delete(payload) {
+        let headers = this.buildHeaders();
+        return delete_(this.fullUri(), payload, headers);
+    }
+
     buildHeaders() {
         let headers = new Map();
         if (this.needAuth) {
@@ -36,5 +41,6 @@ class Endpoint {
 }
 
 export const Me = new Endpoint('/me', true);
+export const Token = new Endpoint('/me/token', true);
 export const Plugin = new Endpoint('/plugin', true);
 export const User = new Endpoint('/user', true);
