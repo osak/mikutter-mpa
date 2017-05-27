@@ -70,3 +70,7 @@
 .user .user__login-token-input {
     background-color: white;
 }
+
+.code-block {
+    display: block;
+}

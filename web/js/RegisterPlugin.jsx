@@ -24,9 +24,23 @@ const RegisterPlugin = ({router}) => {
     return (
         <div>
             <div id="alert" className="alert" role="alert"></div>
+            <div className="plugin-add__description">
+                <h2>How to upload plugin </h2>
+                <ol>
+                    <li>Open your plugin directory in shell.</li>
+                    <li>Create ZIP archive. Recommended command is:
+                        <code className="code-block">
+                            git archive --format zip -o (your-plugin-name).zip --prefix '(your-plugin-name)/' HEAD
+                        </code>
+                        (Note: replace <code>(your-plugin-name)</code> with the actual name of your plugin)
+                    </li>
+                    <li>Choose the created archive in below form.</li>
+                    <li>Click the submit button.</li>
+                </ol>
+            </div>
             <form id="plugin-form" className="form-horizontal" encType="multipart/form-data">
                 <div className="form-group">
-                    <label htmlFor="plugin-archive" className="control-label col-sm-2">Plugin Name</label>
+                    <label htmlFor="plugin-archive" className="control-label col-sm-2">Plugin Archive</label>
                     <div className="col-sm-10">
                         <input type="file" id="plugin-archive" name="plugin-archive" className="form-control" />
                     </div>
