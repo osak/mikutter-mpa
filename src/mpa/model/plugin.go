@@ -115,6 +115,7 @@ func (dao *MongoPluginDAO) FindByKeyword(keyword string) ([]Plugin, error) {
 	err := dao.Collection.Find(bson.M{
 		"name": bson.M{
 			"$regex": ".*" + keyword + ".*",
+			"$options": "i",
 		},
 	}).All(&mps)
 	if err != nil {
